@@ -1,0 +1,9 @@
+# 	Gero Dolfus
+# 	University of Helsinki, HECER
+# 	Start: November 2013.
+#
+
+read_trade.R            Read trade statistics by commodities (Harmonized System) from OECD.
+                        
+look_trade.R            Compute some variables and descriptive statistics.
+
