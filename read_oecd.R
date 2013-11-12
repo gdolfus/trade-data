@@ -41,9 +41,19 @@ dirname.data <- "~/RRR_finn/data/oecd/"
 # - - - - - - - - - - - - - - - - - - - - - - 
 
 
+# * * * * * * * * * * * * * * * * * * * * * * 
+#
+# 				FINLAND - USSR
+#
+# * * * * * * * * * * * * * * * * * * * * * * 
+
+
+
 years <- 1988:1989
 
 tmp.dat.old <- NULL
+
+tmp.partner <- "Former USSR"
 
 for (i in years) {
 
@@ -60,8 +70,13 @@ for (i in years) {
 	tmp.dat <- tmp.dat[tmp.dat$Reporter.Country == "Finland", 
 		]
 	# Look at USSR.
-	tmp.dat <- tmp.dat[tmp.dat$Partner.Country == "Former USSR", 
+	tmp.dat <- tmp.dat[tmp.dat$Partner.Country == tmp.partner, 
 		]
+
+	tmp.dat$Partner.Country <- as.character(tmp.dat$Partner.Country)
+	tmp.dat$Partner.Country[tmp.dat$Partner.Country == 
+		"Former USSR"] <- "USSR"
+
 	# Sort the data according to commodities.
 	tmp.dat <- tmp.dat[order(tmp.dat$Commodity), ]
 	print(dim(tmp.dat))
@@ -72,12 +87,38 @@ for (i in years) {
 }
 
 
-rm(i, tmp.dat, tmp.dat.old)
+rm(tmp.partner, i, tmp.dat, tmp.dat.old)
+
+
 
 # Housekeeping.
-write.csv(sav.dat, paste(dirname.data, "bbb-hs-panel.csv", 
-	sep = ""),row.names=FALSE)
+write.csv(sav.dat, paste(dirname.data, "bbb-hs-panel-fin-su.csv", 
+	sep = ""), row.names = FALSE)
+
+
+
+# * * * * * * * * * * * * * * * * * * * * * * 
+#
+# 				FINLAND - ALL
+#
+# * * * * * * * * * * * * * * * * * * * * * * 
+
+tmp.dat <- read.csv(paste(dirname.data, "hs1988-", as.character(1988), 
+	".csv", sep = ""))
+
+tmp.dat <- tmp.dat[tmp.dat$Reporter.Country == "Finland", 
+	]
+
+tmp.dat$Partner.Country <- as.character(tmp.dat$Partner.Country)
+tmp.dat$Partner.Country[tmp.dat$Partner.Country == "Former USSR"] <- "USSR"
+
+
+# Housekeeping.
+write.csv(tmp.dat, paste(dirname.data, "bbb-hs-1988-fin-all.csv", 
+	sep = ""), row.names = FALSE)
+
+
 
 # Clean up.
-rm(list=ls())
+# rm(list=ls())
 
