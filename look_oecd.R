@@ -38,6 +38,15 @@ dirname.data <- "~/RRR_finn/data/oecd/"
 dirname.tab <- "~/RRR_finn/tables/"
 
 
+
+# * * * * * * * * * * * * * * * * * * * * * * 
+#
+# 				FINLAND - USSR
+#
+# * * * * * * * * * * * * * * * * * * * * * * 
+
+
+
 # - - - - - - - - - - - - - - - - - - - - - -  
 #
 # 		Read the data into memory.
@@ -45,7 +54,7 @@ dirname.tab <- "~/RRR_finn/tables/"
 # - - - - - - - - - - - - - - - - - - - - - - 
 
 
-dat<-read.csv(paste(dirname.data, "bbb-hs-panel.csv", 
+dat<-read.csv(paste(dirname.data, "bbb-hs-panel-fin-su.csv", 
 	sep = ""))
 
 
@@ -77,4 +86,49 @@ tmp.textable<-xtable(tmp.table, caption='OECD Harmonized System 1988 -- Finnish 
 sink(file=paste(dirname.tab,'bbb-trade-fin-su-1988.tex',sep=''))
 tmp.textable
 sink() # this ends the sinking
+
+
+
+# * * * * * * * * * * * * * * * * * * * * * * 
+#
+# 				FINLAND - ALL
+#
+# * * * * * * * * * * * * * * * * * * * * * * 
+
+
+# - - - - - - - - - - - - - - - - - - - - - -  
+#
+# 		Read the data into memory.
+#
+# - - - - - - - - - - - - - - - - - - - - - - 
+
+
+dat<-read.csv(paste(dirname.data, "bbb-hs-1988-fin-all.csv", 
+	sep = ""))
+
+
+tmp.dat <- dat[dat$Commodity == "TOTAL : ALL COMMODITIES", ]
+tmp.dat <- tmp.dat[order(tmp.dat$Value,decreasing=TRUE),]
+tmp.dat <- tmp.dat[tmp.dat$Partner.Country!="World",]
+
+# colnames(tmp.filler)<-colnames(tmp.88)
+
+tmp.dat$Flow<-NULL
+tmp.dat$Measure<-NULL
+tmp.dat$Commodity<-NULL
+tmp.dat$Flags<-NULL
+tmp.dat$Time<-NULL
+tmp.dat$Reporter.Country<-NULL
+tmp.dat$tmp<-tmp.dat$Value/max(tmp.dat$Value)
+
+tmp.table<-tmp.dat[1:20,]
+
+colnames(tmp.table)<-c(" ","1988 USD","Relative to USSR")
+rownames(tmp.table)<-NULL
+tmp.textable<-xtable(tmp.table, caption='OECD Harmonized System 1988 -- Finland\'s biggest Trading Partners in 1988', align=rep('l',ncol(tmp.table)+1), label='top-partners-1988')
+sink(file=paste(dirname.tab,'bbb-trade-fin-all-top-1988.tex',sep=''))
+print(tmp.textable,include.rownames=FALSE)
+sink() # this ends the sinking
+
+
 
