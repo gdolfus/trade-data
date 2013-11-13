@@ -90,6 +90,14 @@ for (i in years) {
 rm(tmp.partner, i, tmp.dat, tmp.dat.old)
 
 
+# Convert to character.
+sav.dat <- data.frame(lapply(sav.dat, as.character), 
+	stringsAsFactors = FALSE)
+sav.dat$Partner.Country[sav.dat$Partner.Country == "Former USSR"] <- "USSR"
+# Convert to numeric.
+sav.dat$Value <- as.numeric(sav.dat$Value)
+
+
 
 # Housekeeping.
 write.csv(sav.dat, paste(dirname.data, "bbb-hs-panel-fin-su.csv", 
@@ -108,10 +116,12 @@ tmp.dat <- read.csv(paste(dirname.data, "hs1988-", as.character(1988),
 
 tmp.dat <- tmp.dat[tmp.dat$Reporter.Country == "Finland", 
 	]
-
-tmp.dat$Partner.Country <- as.character(tmp.dat$Partner.Country)
+# Convert to character.
+tmp.dat <- data.frame(lapply(tmp.dat, as.character), 
+	stringsAsFactors = FALSE)
 tmp.dat$Partner.Country[tmp.dat$Partner.Country == "Former USSR"] <- "USSR"
-
+# Convert to numeric.
+tmp.dat$Value <- as.numeric(tmp.dat$Value)
 
 # Housekeeping.
 write.csv(tmp.dat, paste(dirname.data, "bbb-hs-1988-fin-all.csv", 
@@ -120,5 +130,4 @@ write.csv(tmp.dat, paste(dirname.data, "bbb-hs-1988-fin-all.csv",
 
 
 # Clean up.
-# rm(list=ls())
-
+rm(list = ls())
