@@ -120,6 +120,9 @@ tmp.dat <- tmp.dat[tmp.dat$Reporter.Country == "Finland",
 tmp.dat <- data.frame(lapply(tmp.dat, as.character), 
 	stringsAsFactors = FALSE)
 tmp.dat$Partner.Country[tmp.dat$Partner.Country == "Former USSR"] <- "USSR"
+tmp.dat$Partner.Country[tmp.dat$Partner.Country == "United Kingdom"] <- "UK"
+
+
 # Convert to numeric.
 tmp.dat$Value <- as.numeric(tmp.dat$Value)
 
