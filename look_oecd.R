@@ -64,8 +64,10 @@ dat <- read.csv(paste(dirname.data, "bbb-hs-1988-fin-all.csv",
 # - - - - - - - - - - - - - - - - - - - - - - 
 
 
+tmp.comment.text <- "OECD Harmonized System 1988"
 
-for (i in c("USSR", "Sweden", "United Kingdom", "Germany")) {
+
+for (i in c("USSR", "Sweden", "UK", "Germany")) {
 
 
 	tmp.dat <- dat[dat$Partner.Country == i, ]
@@ -81,33 +83,48 @@ for (i in c("USSR", "Sweden", "United Kingdom", "Germany")) {
 	# Drop the sum over all commodities.
 	tmp.88 <- tmp.88[-1, ]
 	tmp.88 <- data.frame(tmp.88$Commodity, tmp.88$Value, 
-		tmp.88$Value/max(tmp.88$Value), tmp.88$Value/tmp.total$Value)
-	colnames(tmp.88) <- c("Commodity", "Value", "Relative to Total", 
-		"Relative to Total")
+		tmp.88$Value/tmp.total$Value, tmp.88$Value/max(tmp.88$Value))
+	colnames(tmp.88) <- c("Commodity", "Value", "Relative to Sum","Relative to Max ")
 
 	# Compute top and bottom commodity groups.
 	tmp.88.top15 <- tmp.88[1:15, ]
 	tmp.88.top25 <- tmp.88[1:25, ]
-	tmp.88.bottom10 <- tmp.88[(dim(tmp.88)[1] - 10):dim(tmp.88)[1], 
-		]
-
-	tmp.filler <- matrix(NA, nrow = 1, ncol = dim(tmp.88)[2])
-	colnames(tmp.filler) <- colnames(tmp.88)
-	tmp.table <- rbind(tmp.88.top15, tmp.filler, tmp.88.bottom10)
+	# tmp.88.bottom5 <- tmp.88[(dim(tmp.88)[1] - 5):dim(tmp.88)[1], 	]
+	# tmp.filler <- matrix(NA, nrow = 1, ncol = dim(tmp.88)[2])
+	# colnames(tmp.filler) <- colnames(tmp.88)
+	tmp.88.bottom5<-NULL
+	tmp.filler<-NULL
+	tmp.table <- rbind(tmp.88.top15, tmp.filler, tmp.88.bottom5)
 	tmp.table$Value <- format(tmp.table$Value, big.mark = ",", 
 		scientific = FALSE)
-	tmp.textable <- xtable(tmp.table, caption = paste("OECD Harmonized System 1988 -- Finnish Exports to ", 
+
+	tmp.comment <- list()
+	tmp.comment$pos <- list()
+	tmp.comment$pos[[1]] <- c(nrow(tmp.table))
+	tmp.comment$command <- c(paste("\\hline \n", tmp.comment.text, 
+		"  \n", sep = ""))
+
+
+
+	tmp.textable <- xtable(tmp.table, caption = paste("Finnish Exports to ", 
 		i, " in 1988", sep = ""), align = rep("l", ncol(tmp.table) + 
 		1), label = "trade-top-bottom-1988", digits = c(0, 
 		0, 0, 2, 2))
 	sink(file = paste(dirname.tab, "bbb-trade-fin-", 
 		tmp.dat$Partner.Country[1], "-1988.tex", sep = ""))
-	print(tmp.textable, include.rownames = FALSE)
+	print(tmp.textable, include.rownames = FALSE, caption.placement = getOption("xtable.caption.placement", 
+		"top"), add.to.row = tmp.comment, hline.after = c(-1, 
+		0))
 	sink() # this ends the sinking
+
+	if(i=="USSR"){
+	sav.dat<-tmp.dat
+}
 
 }
 
-rm(list = ls(pattern = "tmp"))
+
+rm(list = ls(pattern="tmp"))
 
 
 # * * * * * * * * * * * * * * * * * * * * * * 
@@ -118,6 +135,7 @@ rm(list = ls(pattern = "tmp"))
 
 
 
+tmp.comment.text <- "OECD Harmonized System 1988"
 
 tmp.dat <- dat[dat$Commodity == "TOTAL : ALL COMMODITIES", 
 	]
@@ -140,15 +158,41 @@ tmp.table$Value <- format(tmp.table$Value, big.mark = ",",
 
 colnames(tmp.table) <- c(" ", "1988 USD", "Relative to USSR")
 rownames(tmp.table) <- NULL
-tmp.textable <- xtable(tmp.table, caption = "OECD Harmonized System 1988 -- Finland's biggest Trading Partners in 1988", 
+
+
+tmp.comment <- list()
+tmp.comment$pos <- list()
+tmp.comment$pos[[1]] <- c(nrow(tmp.table))
+tmp.comment$command <- c(paste("\\hline \n", tmp.comment.text, 
+	"  \n", sep = ""))
+
+
+
+tmp.textable <- xtable(tmp.table, caption = "Finland's biggest Trading Partners in 1988", 
 	align = rep("l", ncol(tmp.table) + 1), label = "top-partners-1988", 
 	digits = c(0, 0, 0, 2))
+
+
 sink(file = paste(dirname.tab, "bbb-trade-fin-all-top-1988.tex", 
 	sep = ""))
 print(tmp.textable, include.rownames = FALSE, caption.placement = getOption("xtable.caption.placement", 
-	"top"))
+	"top"), add.to.row = tmp.comment, hline.after = c(-1, 
+	0))
 sink() # this ends the sinking
 
 
-# rm(list=ls(pattern='tmp'))
+rm(list=ls(pattern='tmp'))
+
+
+
+
+# * * * * * * * * * * * * * * * * * * * * * * 
+#
+# 				Geographic distribution of largest export groups to the USSR
+#
+# * * * * * * * * * * * * * * * * * * * * * * 
+
+
+sav.dat
+
 
