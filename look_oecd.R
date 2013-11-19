@@ -83,8 +83,8 @@ for (i in c("USSR", "Sweden", "UK", "Germany")) {
 	# Drop the sum over all commodities.
 	tmp.88 <- tmp.88[-1, ]
 	tmp.88 <- data.frame(tmp.88$Commodity, tmp.88$Value, 
-		tmp.88$Value/tmp.total$Value, tmp.88$Value/max(tmp.88$Value))
-	colnames(tmp.88) <- c("Commodity", "Value", "Relative to Sum","Relative to Max ")
+		100*tmp.88$Value/tmp.total$Value, 100*tmp.88$Value/max(tmp.88$Value))
+	colnames(tmp.88) <- c("Commodity", "1988 USD", "% of sum","% of max ")
 
 	# Compute top and bottom commodity groups.
 	tmp.88.top15 <- tmp.88[1:15, ]
@@ -95,7 +95,7 @@ for (i in c("USSR", "Sweden", "UK", "Germany")) {
 	tmp.88.bottom5<-NULL
 	tmp.filler<-NULL
 	tmp.table <- rbind(tmp.88.top15, tmp.filler, tmp.88.bottom5)
-	tmp.table$Value <- format(tmp.table$Value, big.mark = ",", 
+	tmp.table$"1988 USD" <- format(tmp.table$"1988 USD", big.mark = ",", 
 		scientific = FALSE)
 
 	tmp.comment <- list()
@@ -118,7 +118,7 @@ for (i in c("USSR", "Sweden", "UK", "Germany")) {
 	sink() # this ends the sinking
 
 	if(i=="USSR"){
-	sav.dat<-tmp.dat
+	sav.dat<-tmp.88
 }
 
 }
@@ -148,15 +148,15 @@ tmp.dat$Commodity <- NULL
 tmp.dat$Flags <- NULL
 tmp.dat$Time <- NULL
 tmp.dat$Reporter.Country <- NULL
-tmp.dat$tmp <- tmp.dat$Value/max(tmp.dat$Value)
 
 # Remove "World", i.e. start from second row.
 tmp.table <- tmp.dat[2:20, ]
+tmp.table$tmp <- 100*tmp.table$Value/max(tmp.table$Value)
 
 tmp.table$Value <- format(tmp.table$Value, big.mark = ",", 
 	scientific = FALSE)
 
-colnames(tmp.table) <- c(" ", "1988 USD", "Relative to USSR")
+colnames(tmp.table) <- c(" ", "1988 USD", "% of USSR")
 rownames(tmp.table) <- NULL
 
 
@@ -169,7 +169,7 @@ tmp.comment$command <- c(paste("\\hline \n", tmp.comment.text,
 
 
 tmp.textable <- xtable(tmp.table, caption = "Finland's biggest Trading Partners in 1988", 
-	align = rep("l", ncol(tmp.table) + 1), label = "top-partners-1988", 
+	align = c('l','l','r','r'), label = "top-partners-1988", 
 	digits = c(0, 0, 0, 2))
 
 
@@ -193,6 +193,73 @@ rm(list=ls(pattern='tmp'))
 # * * * * * * * * * * * * * * * * * * * * * * 
 
 
-sav.dat
+tmp.goods<-as.character(sav.dat$Commodity[1:10])
+
+
+tmp.dat <- dat[dat$Commodity%in%tmp.goods, 	]
+tmp.dat <- tmp.dat[tmp.dat$Partner.Country!="World",]
+tmp.dat$Reporter.Country <- NULL
+tmp.dat$Measure <- NULL
+tmp.dat$Flow <- NULL
+tmp.dat$Time <- NULL
+tmp.dat$Flags <- NULL
+tmp.dat$Value <-as.numeric(as.character(tmp.dat$Value))
+
+tmp.sorted <- tmp.dat[order(tmp.dat$Value, decreasing = TRUE), ]
+
+
+start="yes"
+for(i in tmp.goods){
+print(i)
+tmp.v<-tmp.sorted[tmp.sorted$Commodity==i,]
+tmp.v$Commodity<-NULL
+tmp.new <-tmp.v[1:10,]
+# tmp.new$Partner.Country<-as.character(tmp.new$Partner.Country)
+# tmp.new$Value<-as.numeric(as.character(tmp.new$Value))
+
+tmp.filler <- matrix(NA, nrow = 1, ncol = dim(tmp.new)[2])
+colnames(tmp.filler) <- colnames(tmp.new)
+tmp.filler[1,1]<-i
+tmp.filler[1,2]<-" "
+
+tmp.filler<-data.frame(tmp.filler)
+
+if(start=="yes"){tmp.df<-tmp.new
+	start="no"}
+tmp.df <-rbind(tmp.df,tmp.filler,tmp.new)
+
+
+
+}
+
+
+tmp.df<-tmp.df[-c(1:10),]
+
+colnames(tmp.df)<-c("Country","1988 USD")
+tmp.table<-tmp.df
+
+
+tmp.comment.text <- "OECD Harmonized System 1988"
+tmp.comment <- list()
+tmp.comment$pos <- list()
+tmp.comment$pos[[1]] <- c(nrow(tmp.table))
+tmp.comment$command <- c(paste("\\hline \n", tmp.comment.text, 
+	"  \n", sep = ""))
+
+
+tmp.textable <- xtable(tmp.table, caption = "Geographical Distribution of Biggest Export Groups in Finnish-Soviet Trade", 
+	align = c('l','l','r'), label = "geographical-top-groups-ussr-1988", 
+	digits = c(0, 0, 0))
+
+
+sink(file = paste(dirname.tab, "bbb-trade-fin-ussr-distribution-1988.tex", 
+	sep = ""))
+print(tmp.textable, include.rownames = FALSE, caption.placement = getOption("xtable.caption.placement", 
+	"top"), add.to.row = tmp.comment, hline.after = c(-1, 
+	0))
+sink() # this ends the sinking
+
+
+rm(list=ls(pattern='tmp'))
 
 
