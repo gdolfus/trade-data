@@ -37,8 +37,8 @@ dirname.data <- "~/RRR_finn/data/oecd/"
 # Set the name of the directory for saving LaTeX tables.
 dirname.tab <- "~/RRR_finn/tables/"
 
-
-
+# The data is for 1988 and 1989.
+year <- 1990
 
 # - - - - - - - - - - - - - - - - - - - - - -  
 #
@@ -47,8 +47,9 @@ dirname.tab <- "~/RRR_finn/tables/"
 # - - - - - - - - - - - - - - - - - - - - - - 
 
 
-dat <- read.csv(paste(dirname.data, "bbb-hs-1988-fin-all.csv", 
-	sep = ""))
+
+
+dat <- read.csv(paste(dirname.data, "bbb-hs-1988-fin-all-", year, ".csv", sep = ""))
 
 
 # * * * * * * * * * * * * * * * * * * * * * * 
@@ -67,7 +68,8 @@ dat <- read.csv(paste(dirname.data, "bbb-hs-1988-fin-all.csv",
 tmp.comment.text <- "OECD Harmonized System 1988"
 
 
-for (i in c("USSR", "Sweden", "UK", "Germany")) {
+for (i in c("USSR", "Sweden", "UK", "Germany", "USA")) {
+	# for (i in c("USSR")) {
 
 
 	tmp.dat <- dat[dat$Partner.Country == i, ]
@@ -75,56 +77,51 @@ for (i in c("USSR", "Sweden", "UK", "Germany")) {
 
 
 	# Sort the data according to the value of the trade by commodity group.
-	tmp.sorted <- tmp.dat[order(tmp.dat$Value, decreasing = TRUE), 
-		]
+	tmp.sorted <- tmp.dat[order(tmp.dat$Value, decreasing = TRUE), ]
 	# Check one year at a time.
-	tmp.88 <- tmp.sorted[tmp.sorted$Time == 1988, ]
+	tmp.88 <- tmp.sorted[tmp.sorted$Time == year, ]
 	tmp.total <- tmp.88[1, ]
 	# Drop the sum over all commodities.
 	tmp.88 <- tmp.88[-1, ]
-	tmp.88 <- data.frame(tmp.88$Commodity, tmp.88$Value, 
-		100*tmp.88$Value/tmp.total$Value, 100*tmp.88$Value/max(tmp.88$Value))
-	colnames(tmp.88) <- c("Commodity", "1988 USD", "% of sum","% of max ")
+	tmp.88 <- data.frame(tmp.88$Commodity, tmp.88$Value, 100 * tmp.88$Value/tmp.total$Value, 
+		100 * tmp.88$Value/max(tmp.88$Value))
+	colnames(tmp.88) <- c("Commodity", "current USD", "% of sum", "% of max ")
 
 	# Compute top and bottom commodity groups.
 	tmp.88.top15 <- tmp.88[1:15, ]
 	tmp.88.top25 <- tmp.88[1:25, ]
 	# tmp.88.bottom5 <- tmp.88[(dim(tmp.88)[1] - 5):dim(tmp.88)[1], 	]
 	# tmp.filler <- matrix(NA, nrow = 1, ncol = dim(tmp.88)[2])
-	# colnames(tmp.filler) <- colnames(tmp.88)
-	tmp.88.bottom5<-NULL
-	tmp.filler<-NULL
+# colnames(tmp.filler) <- colnames(tmp.88)
+tmp.88.bottom5 <- NULL
+	tmp.filler <- NULL
 	tmp.table <- rbind(tmp.88.top15, tmp.filler, tmp.88.bottom5)
-	tmp.table$"1988 USD" <- format(tmp.table$"1988 USD", big.mark = ",", 
-		scientific = FALSE)
+	tmp.table$"current USD" <- format(tmp.table$"current USD", big.mark = ",", scientific = FALSE)
 
 	tmp.comment <- list()
 	tmp.comment$pos <- list()
 	tmp.comment$pos[[1]] <- c(nrow(tmp.table))
-	tmp.comment$command <- c(paste("\\hline \n", tmp.comment.text, 
-		"  \n", sep = ""))
+	tmp.comment$command <- c(paste("\\hline \n", tmp.comment.text, "  \n", sep = ""))
 
 
 
-	tmp.textable <- xtable(tmp.table, caption = paste("Finnish Exports to ", 
-		i, " in 1988", sep = ""), align = rep("l", ncol(tmp.table) + 
-		1), label = "trade-top-bottom-1988", digits = c(0, 
-		0, 0, 2, 2))
-	sink(file = paste(dirname.tab, "bbb-trade-fin-", 
-		tmp.dat$Partner.Country[1], "-1988.tex", sep = ""))
+	tmp.textable <- xtable(tmp.table, caption = paste("Finnish Exports to ", i, " in ", 
+		as.character(year), sep = ""), align = rep("l", ncol(tmp.table) + 1), label = paste("trade-top-bottom-", 
+		as.character(year), sep = ""), digits = c(0, 0, 0, 2, 2))
+	sink(file = paste(dirname.tab, "bbb-trade-fin-", tmp.dat$Partner.Country[1], "-", 
+		as.character(year), ".tex", sep = ""))
 	print(tmp.textable, include.rownames = FALSE, caption.placement = getOption("xtable.caption.placement", 
-		"top"), add.to.row = tmp.comment, hline.after = c(-1, 
-		0))
+		"top"), add.to.row = tmp.comment, hline.after = c(-1, 0))
 	sink() # this ends the sinking
 
-	if(i=="USSR"){
-	sav.dat<-tmp.88
-}
+	if (i == "USSR") {
+		sav.dat <- tmp.88
+	}
 
 }
 
 
-rm(list = ls(pattern="tmp"))
+rm(list = ls(pattern = "tmp"))
 
 
 # * * * * * * * * * * * * * * * * * * * * * * 
@@ -137,10 +134,8 @@ rm(list = ls(pattern="tmp"))
 
 tmp.comment.text <- "OECD Harmonized System 1988"
 
-tmp.dat <- dat[dat$Commodity == "TOTAL : ALL COMMODITIES", 
-	]
-tmp.dat <- tmp.dat[order(tmp.dat$Value, decreasing = TRUE), 
-	]
+tmp.dat <- dat[dat$Commodity == "TOTAL : ALL COMMODITIES", ]
+tmp.dat <- tmp.dat[order(tmp.dat$Value, decreasing = TRUE), ]
 
 tmp.dat$Flow <- NULL
 tmp.dat$Measure <- NULL
@@ -151,37 +146,35 @@ tmp.dat$Reporter.Country <- NULL
 
 # Remove "World", i.e. start from second row.
 tmp.table <- tmp.dat[2:20, ]
-tmp.table$tmp <- 100*tmp.table$Value/max(tmp.table$Value)
+tmp.table$tmp <- 100 * tmp.table$Value/max(tmp.table$Value)
+tmp.table$tmp2 <- 100 * tmp.table$Value/sum(tmp.table$Value)
 
-tmp.table$Value <- format(tmp.table$Value, big.mark = ",", 
-	scientific = FALSE)
+tmp.table$Value <- format(tmp.table$Value, big.mark = ",", scientific = FALSE)
 
-colnames(tmp.table) <- c(" ", "1988 USD", "% of USSR")
+colnames(tmp.table) <- c(" ", "current USD", "% of USSR", "% of total")
 rownames(tmp.table) <- NULL
 
 
 tmp.comment <- list()
 tmp.comment$pos <- list()
 tmp.comment$pos[[1]] <- c(nrow(tmp.table))
-tmp.comment$command <- c(paste("\\hline \n", tmp.comment.text, 
-	"  \n", sep = ""))
+tmp.comment$command <- c(paste("\\hline \n", tmp.comment.text, "  \n", sep = ""))
 
 
 
-tmp.textable <- xtable(tmp.table, caption = "Finland's biggest Trading Partners in 1988", 
-	align = c('l','l','r','r'), label = "top-partners-1988", 
-	digits = c(0, 0, 0, 2))
+tmp.textable <- xtable(tmp.table, caption = paste("Finland's biggest Trading Partners in", 
+	as.character(year), sep = " "), align = c("l", "l", "r", "r", "r"), label = paste("top-partners-", 
+	as.character(year), sep = " "), digits = c(0, 0, 0, 2, 2))
 
 
-sink(file = paste(dirname.tab, "bbb-trade-fin-all-top-1988.tex", 
+sink(file = paste(dirname.tab, "bbb-trade-fin-all-top-", as.character(year), ".tex", 
 	sep = ""))
 print(tmp.textable, include.rownames = FALSE, caption.placement = getOption("xtable.caption.placement", 
-	"top"), add.to.row = tmp.comment, hline.after = c(-1, 
-	0))
+	"top"), add.to.row = tmp.comment, hline.after = c(-1, 0))
 sink() # this ends the sinking
 
 
-rm(list=ls(pattern='tmp'))
+rm(list = ls(pattern = "tmp"))
 
 
 
@@ -193,73 +186,83 @@ rm(list=ls(pattern='tmp'))
 # * * * * * * * * * * * * * * * * * * * * * * 
 
 
-tmp.goods<-as.character(sav.dat$Commodity[1:10])
+tmp.goods <- as.character(sav.dat$Commodity[1:10])
 
 
-tmp.dat <- dat[dat$Commodity%in%tmp.goods, 	]
-tmp.dat <- tmp.dat[tmp.dat$Partner.Country!="World",]
+tmp.dat <- dat[dat$Commodity %in% tmp.goods, ]
+tmp.dat <- tmp.dat[tmp.dat$Partner.Country != "World", ]
 tmp.dat$Reporter.Country <- NULL
 tmp.dat$Measure <- NULL
 tmp.dat$Flow <- NULL
 tmp.dat$Time <- NULL
 tmp.dat$Flags <- NULL
-tmp.dat$Value <-as.numeric(as.character(tmp.dat$Value))
+tmp.dat$Value <- as.numeric(as.character(tmp.dat$Value))
 
 tmp.sorted <- tmp.dat[order(tmp.dat$Value, decreasing = TRUE), ]
 
 
-start="yes"
-for(i in tmp.goods){
-print(i)
-tmp.v<-tmp.sorted[tmp.sorted$Commodity==i,]
-tmp.v$Commodity<-NULL
-tmp.new <-tmp.v[1:10,]
-# tmp.new$Partner.Country<-as.character(tmp.new$Partner.Country)
-# tmp.new$Value<-as.numeric(as.character(tmp.new$Value))
+start = "yes"
+tmp.ncountries = 5
+for (i in tmp.goods) {
 
-tmp.filler <- matrix(NA, nrow = 1, ncol = dim(tmp.new)[2])
-colnames(tmp.filler) <- colnames(tmp.new)
-tmp.filler[1,1]<-i
-tmp.filler[1,2]<-" "
+	tmp.v <- tmp.sorted[tmp.sorted$Commodity == i, ]
+	tmp.v$Commodity <- NULL
+	tmp.v$tmp <- 100 * tmp.v$Value/sum(tmp.v$Value)
+	tmp.new <- tmp.v[1:tmp.ncountries, ]
+	# tmp.new$Partner.Country<-as.character(tmp.new$Partner.Country)
+	# tmp.new$Value<-as.numeric(as.character(tmp.new$Value))
 
-tmp.filler<-data.frame(tmp.filler)
 
-if(start=="yes"){tmp.df<-tmp.new
-	start="no"}
-tmp.df <-rbind(tmp.df,tmp.filler,tmp.new)
+	# Place holder.
+	tmp.filler <- matrix(NA, nrow = 2, ncol = dim(tmp.new)[2])
+	colnames(tmp.filler) <- colnames(tmp.new)
+	tmp.filler[1, 1] <- i
+	# tmp.filler[1, 2] <- " "
+	# tmp.filler[1, 3] <- " "
+tmp.filler <- data.frame(tmp.filler)
+
+	if (start == "yes") {
+		tmp.df <- tmp.new
+		start = "no"
+	}
+
+	# Create one long table.
+	tmp.df <- rbind(tmp.df, tmp.filler, tmp.new, tmp.filler[, 2])
 
 
 
 }
 
 
-tmp.df<-tmp.df[-c(1:10),]
+tmp.df <- tmp.df[-c(1:tmp.ncountries), ]
 
-colnames(tmp.df)<-c("Country","1988 USD")
-tmp.table<-tmp.df
+colnames(tmp.df) <- c("Country", "current USD", "% of total")
+tmp.table <- tmp.df
 
+tmp.table$"current USD" <- as.numeric(tmp.table$"current USD")
+tmp.table$"current USD" <- format(tmp.table$"current USD", big.mark = ",", scientific = FALSE)
+tmp.table$"% of total" <- as.numeric(tmp.table$"% of total")
 
 tmp.comment.text <- "OECD Harmonized System 1988"
 tmp.comment <- list()
 tmp.comment$pos <- list()
 tmp.comment$pos[[1]] <- c(nrow(tmp.table))
-tmp.comment$command <- c(paste("\\hline \n", tmp.comment.text, 
-	"  \n", sep = ""))
+tmp.comment$command <- c(paste("\\hline \n", tmp.comment.text, "  \n", sep = ""))
+
 
 
 tmp.textable <- xtable(tmp.table, caption = "Geographical Distribution of Biggest Export Groups in Finnish-Soviet Trade", 
-	align = c('l','l','r'), label = "geographical-top-groups-ussr-1988", 
-	digits = c(0, 0, 0))
+	align = c("l", "l", "r", "r"), label = paste("geographical-top-groups-ussr-", 
+		as.character(year), sep = " "), digits = c(0, 0, 0, 2))
 
 
-sink(file = paste(dirname.tab, "bbb-trade-fin-ussr-distribution-1988.tex", 
-	sep = ""))
+sink(file = paste(dirname.tab, "bbb-trade-fin-ussr-distribution-", as.character(year), 
+	".tex", sep = ""))
 print(tmp.textable, include.rownames = FALSE, caption.placement = getOption("xtable.caption.placement", 
-	"top"), add.to.row = tmp.comment, hline.after = c(-1, 
-	0))
+	"top"), add.to.row = tmp.comment, hline.after = c(-1, 0), tabular.environment = "longtable", 
+	floating = FALSE)
 sink() # this ends the sinking
 
 
-rm(list=ls(pattern='tmp'))
 
-
+# rm(list = ls(pattern = "tmp"))
