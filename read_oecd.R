@@ -49,7 +49,7 @@ dirname.data <- "~/RRR_finn/data/oecd/"
 
 
 
-years <- 1988:1989
+years <- 1990
 
 tmp.dat.old <- NULL
 
@@ -125,13 +125,15 @@ for (i in years) {
 		"Former USSR"] <- "USSR"
 	tmp.dat$Partner.Country[tmp.dat$Partner.Country == 
 		"United Kingdom"] <- "UK"
+	tmp.dat$Partner.Country[tmp.dat$Partner.Country == 
+		"United States"] <- "USA"
 
 
 	# Convert to numeric.
 	tmp.dat$Value <- as.numeric(tmp.dat$Value)
 
 	# Housekeeping.
-	write.csv(tmp.dat, paste(dirname.data, "bbb-hs-1988-fin-all", 
+	write.csv(tmp.dat, paste(dirname.data, "bbb-hs-1988-fin-all-", 
 		as.character(i), ".csv", sep = ""), row.names = FALSE)
 
 }
