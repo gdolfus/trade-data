@@ -111,26 +111,30 @@ write.csv(sav.dat, paste(dirname.data, "bbb-hs-panel-fin-su.csv",
 #
 # * * * * * * * * * * * * * * * * * * * * * * 
 
-tmp.dat <- read.csv(paste(dirname.data, "hs1988-", as.character(1988), 
-	".csv", sep = ""))
+for (i in years) {
 
-tmp.dat <- tmp.dat[tmp.dat$Reporter.Country == "Finland", 
-	]
-# Convert to character.
-tmp.dat <- data.frame(lapply(tmp.dat, as.character), 
-	stringsAsFactors = FALSE)
-tmp.dat$Partner.Country[tmp.dat$Partner.Country == "Former USSR"] <- "USSR"
-tmp.dat$Partner.Country[tmp.dat$Partner.Country == "United Kingdom"] <- "UK"
+	tmp.dat <- read.csv(paste(dirname.data, "hs1988-", 
+		as.character(i), ".csv", sep = ""))
 
-
-# Convert to numeric.
-tmp.dat$Value <- as.numeric(tmp.dat$Value)
-
-# Housekeeping.
-write.csv(tmp.dat, paste(dirname.data, "bbb-hs-1988-fin-all.csv", 
-	sep = ""), row.names = FALSE)
+	tmp.dat <- tmp.dat[tmp.dat$Reporter.Country == "Finland", 
+		]
+	# Convert to character.
+	tmp.dat <- data.frame(lapply(tmp.dat, as.character), 
+		stringsAsFactors = FALSE)
+	tmp.dat$Partner.Country[tmp.dat$Partner.Country == 
+		"Former USSR"] <- "USSR"
+	tmp.dat$Partner.Country[tmp.dat$Partner.Country == 
+		"United Kingdom"] <- "UK"
 
 
+	# Convert to numeric.
+	tmp.dat$Value <- as.numeric(tmp.dat$Value)
+
+	# Housekeeping.
+	write.csv(tmp.dat, paste(dirname.data, "bbb-hs-1988-fin-all", 
+		as.character(i), ".csv", sep = ""), row.names = FALSE)
+
+}
 
 # Clean up.
-rm(list = ls())
+# rm(list = ls())
