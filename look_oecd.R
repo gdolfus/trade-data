@@ -38,7 +38,7 @@ dirname.data <- "~/RRR_finn/data/oecd/"
 dirname.tab <- "~/RRR_finn/tables/"
 
 # The data is for 1988 and 1989.
-year <- 1990
+year <- 1989
 
 # - - - - - - - - - - - - - - - - - - - - - -  
 #
@@ -85,7 +85,7 @@ for (i in c("USSR", "Sweden", "UK", "Germany", "USA")) {
 	tmp.88 <- tmp.88[-1, ]
 	tmp.88 <- data.frame(tmp.88$Commodity, tmp.88$Value, 100 * tmp.88$Value/tmp.total$Value, 
 		100 * tmp.88$Value/max(tmp.88$Value))
-	colnames(tmp.88) <- c("Commodity", "current USD", "% of sum", "% of max ")
+	colnames(tmp.88) <- c("Commodity", "current Mill USD", "% of sum", "% of max ")
 
 	# Compute top and bottom commodity groups.
 	tmp.88.top15 <- tmp.88[1:15, ]
@@ -96,7 +96,9 @@ for (i in c("USSR", "Sweden", "UK", "Germany", "USA")) {
 tmp.88.bottom5 <- NULL
 	tmp.filler <- NULL
 	tmp.table <- rbind(tmp.88.top15, tmp.filler, tmp.88.bottom5)
-	tmp.table$"current USD" <- format(tmp.table$"current USD", big.mark = ",", scientific = FALSE)
+	
+	tmp.table$"current Mill USD"<-tmp.table$"current Mill USD"/10^6
+	tmp.table$"current Mill USD" <- format(tmp.table$"current Mill USD", big.mark = ",", scientific = FALSE,digits=2)
 
 	tmp.comment <- list()
 	tmp.comment$pos <- list()
@@ -107,7 +109,7 @@ tmp.88.bottom5 <- NULL
 
 	tmp.textable <- xtable(tmp.table, caption = paste("Finnish Exports to ", i, " in ", 
 		as.character(year), sep = ""), align = rep("l", ncol(tmp.table) + 1), label = paste("trade-top-bottom-", 
-		as.character(year), sep = ""), digits = c(0, 0, 0, 2, 2))
+		as.character(year), sep = ""), digits = c(0, 0, 2, 2, 2))
 	sink(file = paste(dirname.tab, "bbb-trade-fin-", tmp.dat$Partner.Country[1], "-", 
 		as.character(year), ".tex", sep = ""))
 	print(tmp.textable, include.rownames = FALSE, caption.placement = getOption("xtable.caption.placement", 
@@ -145,13 +147,14 @@ tmp.dat$Time <- NULL
 tmp.dat$Reporter.Country <- NULL
 
 # Remove "World", i.e. start from second row.
-tmp.table <- tmp.dat[2:20, ]
+tmp.table <- tmp.dat[2:15, ]
 tmp.table$tmp <- 100 * tmp.table$Value/max(tmp.table$Value)
 tmp.table$tmp2 <- 100 * tmp.table$Value/sum(tmp.table$Value)
 
-tmp.table$Value <- format(tmp.table$Value, big.mark = ",", scientific = FALSE)
+tmp.table$Value <- tmp.table$Value/10^6
+tmp.table$Value <- format(tmp.table$Value, big.mark = ",", scientific = FALSE,digits=2)
 
-colnames(tmp.table) <- c(" ", "current USD", "% of USSR", "% of total")
+colnames(tmp.table) <- c(" ", "current Mill USD", "% of USSR", "% of total")
 rownames(tmp.table) <- NULL
 
 
@@ -164,7 +167,7 @@ tmp.comment$command <- c(paste("\\hline \n", tmp.comment.text, "  \n", sep = "")
 
 tmp.textable <- xtable(tmp.table, caption = paste("Finland's biggest Trading Partners in", 
 	as.character(year), sep = " "), align = c("l", "l", "r", "r", "r"), label = paste("top-partners-", 
-	as.character(year), sep = " "), digits = c(0, 0, 0, 2, 2))
+	as.character(year), sep = " "), digits = c(0, 0, 2, 2, 2))
 
 
 sink(file = paste(dirname.tab, "bbb-trade-fin-all-top-", as.character(year), ".tex", 
@@ -236,12 +239,14 @@ tmp.filler <- data.frame(tmp.filler)
 
 tmp.df <- tmp.df[-c(1:tmp.ncountries), ]
 
-colnames(tmp.df) <- c("Country", "current USD", "% of total")
+colnames(tmp.df) <- c("Country", "current Mill USD", "% of total")
 tmp.table <- tmp.df
 
-tmp.table$"current USD" <- as.numeric(tmp.table$"current USD")
-tmp.table$"current USD" <- format(tmp.table$"current USD", big.mark = ",", scientific = FALSE)
+tmp.table$"current Mill USD" <- as.numeric(tmp.table$"current Mill USD")
+tmp.table$"current Mill USD" <- tmp.table$"current Mill USD"/10^6
 tmp.table$"% of total" <- as.numeric(tmp.table$"% of total")
+tmp.table$"current Mill USD" <- format(tmp.table$"current Mill USD", big.mark = ",", scientific = FALSE,digits=2)
+
 
 tmp.comment.text <- "OECD Harmonized System 1988"
 tmp.comment <- list()
@@ -253,7 +258,7 @@ tmp.comment$command <- c(paste("\\hline \n", tmp.comment.text, "  \n", sep = "")
 
 tmp.textable <- xtable(tmp.table, caption = "Geographical Distribution of Biggest Export Groups in Finnish-Soviet Trade", 
 	align = c("l", "l", "r", "r"), label = paste("geographical-top-groups-ussr-", 
-		as.character(year), sep = " "), digits = c(0, 0, 0, 2))
+		as.character(year), sep = " "), digits = c(0, 0, 2, 2))
 
 
 sink(file = paste(dirname.tab, "bbb-trade-fin-ussr-distribution-", as.character(year), 
