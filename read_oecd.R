@@ -100,7 +100,7 @@ sav.dat$Value <- as.numeric(sav.dat$Value)
 
 
 # Housekeeping.
-write.csv(sav.dat, paste(dirname.data, "bbb-hs-panel-fin-su.csv", 
+write.csv(sav.dat, paste(dirname.data, "oecd-hs-panel-fin-su.csv", 
 	sep = ""), row.names = FALSE)
 
 
@@ -133,7 +133,7 @@ for (i in years) {
 	tmp.dat$Value <- as.numeric(tmp.dat$Value)
 
 	# Housekeeping.
-	write.csv(tmp.dat, paste(dirname.data, "bbb-hs-1988-fin-all-", 
+	write.csv(tmp.dat, paste(dirname.data, "oecd-hs-1988-fin-all-", 
 		as.character(i), ".csv", sep = ""), row.names = FALSE)
 
 }
