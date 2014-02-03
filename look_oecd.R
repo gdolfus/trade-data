@@ -29,6 +29,8 @@
 rm(list = ls())
 # Load the package for creating LaTeX tables.
 library(xtable)
+# Load the package for creating plots.
+library(ggplot2)
 
 
 # Set the name of the directory where the data is.
@@ -36,6 +38,10 @@ dirname.data <- "~/RRR_finn/data/oecd/"
 
 # Set the name of the directory for saving LaTeX tables.
 dirname.tab <- "~/RRR_finn/tables/"
+
+# Set the name of the directory for saving pictures.
+dirname.pics <- "~/RRR_finn/pics/"
+
 
 # The data is for 1988 and 1989.
 year <- 1989
@@ -52,6 +58,12 @@ year <- 1989
 dat <- read.csv(paste(dirname.data, "oecd-hs-1988-fin-all-", year, ".csv", sep = ""))
 
 
+
+
+sav.comment.text <- "{\\footnotesize{\\it Source:} OECD Harmonized System 1988, \\cite{OECD2013}}."
+
+
+
 # * * * * * * * * * * * * * * * * * * * * * * 
 #
 # 				FINLAND - country i	
@@ -63,10 +75,6 @@ dat <- read.csv(paste(dirname.data, "oecd-hs-1988-fin-all-", year, ".csv", sep =
 # 		Look at the biggest groups of goods.
 #
 # - - - - - - - - - - - - - - - - - - - - - - 
-
-
-sav.comment.text <- "{\\footnotesize{\\it Source:} OECD Harmonized System 1988, \\cite{OECD2013}}."
-
 
 for (i in c("USSR", "Sweden", "UK", "Germany", "USA")) {
 	# for (i in c("USSR")) {
@@ -119,9 +127,26 @@ tmp.filename = paste(dirname.tab, tmp.label,".tex", sep = "")
 		add.to.row = tmp.comment, hline.after = c(-1, 0))
 	sink() # this ends the sinking
 
+# Save also a smaller table.
+tmp.table=tmp.table[,c(1,3)]
+tmp.filename = paste(dirname.tab, tmp.label,"-percentage-of-sum-only.tex", sep = "")
+
+tmp.textable <- xtable(tmp.table, caption = paste("Finnish Exports to ", i, " in ", as.character(year), sep = ""), 
+		align = rep("l", ncol(tmp.table) + 1), label = tmp.label, 
+		digits = c(0,  2,2))
+	sink(file = tmp.filename)
+	print(tmp.textable, include.rownames = FALSE, caption.placement = getOption("xtable.caption.placement", "top"), 
+		add.to.row = tmp.comment, hline.after = c(-1, 0))
+	sink() # this ends the sinking
+
+
+
+
 	if (i == "USSR") {
 		sav.dat <- tmp.88
 	}
+	
+	
 
 }
 
@@ -149,12 +174,20 @@ tmp.dat$Time <- NULL
 tmp.dat$Reporter.Country <- NULL
 
 # Remove "World", i.e. start from second row.
-tmp.table <- tmp.dat[2:9, ]
+tmp.table <- tmp.dat[2:dim(tmp.dat)[1], ]
 tmp.table$tmp <- 100 * tmp.table$Value/max(tmp.table$Value)
 tmp.table$tmp2 <- 100 * tmp.table$Value/sum(tmp.table$Value)
 
+# Choose a subset of the table.
+tmp.table=tmp.table[1:7,]
+
+# Create the table.
+
 tmp.table$Value <- tmp.table$Value/10^6
+tmp.table$tmp2 <- format(tmp.table$tmp2, scientific = FALSE, digits = 2)
+tmp.table$tmp <- format(tmp.table$tmp, scientific = FALSE, digits = 2)
 tmp.table$Value <- format(tmp.table$Value, big.mark = ",", scientific = FALSE, digits = 2)
+
 
 colnames(tmp.table) <- c(" ", "current Mill USD", "% of USSR", "% of total")
 rownames(tmp.table) <- NULL
@@ -182,6 +215,42 @@ sink(file = tmp.filename)
 print(tmp.textable, include.rownames = FALSE, caption.placement = getOption("xtable.caption.placement", "top"), 
 	add.to.row = tmp.comment, hline.after = c(-1, 0))
 sink() # this ends the sinking
+
+sink(file = tmp.filename)
+print(tmp.textable, include.rownames = FALSE, caption.placement = getOption("xtable.caption.placement", "top"), 
+	add.to.row = tmp.comment, hline.after = c(-1, 0))
+sink() # this ends the sinking
+
+
+
+# Create a pie chart.
+
+colnames(tmp.table)[1]='country'
+colnames(tmp.table)[4]='percentage'
+tmp.table$country=as.character(tmp.table$country)
+tmp.other=as.character((100-sum(as.numeric(tmp.table$percentage))))
+tmp.table=rbind(tmp.table,c("Other","NA","NA",tmp.other))
+tmp.table$percentage = as.numeric(tmp.table$percentage)
+
+tmp.plot<-ggplot(tmp.table, aes(x = factor(0), y = percentage, fill = country))
+tmp.plot =tmp.plot+	geom_bar(stat = "identity", position = "fill") 
+tmp.plot =tmp.plot+	scale_fill_brewer(palette = "Set1") 
+tmp.plot =tmp.plot+ coord_polar(theta = "y") 
+tmp.plot = tmp.plot + 
+	theme(axis.ticks = element_blank(), 
+	axis.text.y = element_blank(), 
+		axis.text.x = element_blank(),
+		 panel.background = element_blank(),
+		panel.grid.minor = element_blank(), 
+		panel.grid.major = element_blank(), 
+		axis.title.y = element_blank(), 		
+		axis.title.x = element_blank(), 
+		legend.title=element_blank()
+		# title=element_text(paste("Finland's biggest Trading Partners in", as.character(year)))
+		)
+
+ggsave(paste(dirname.pics,tmp.label,'-pie.pdf',sep=""), plot = tmp.plot, width = 4, height = 4)
+
 
 
 rm(list = ls(pattern = "tmp"))
