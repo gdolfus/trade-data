@@ -6,4 +6,10 @@
 read_trade.R            Read trade statistics by commodities (Harmonized System) from OECD.
                         
 look_trade.R            Compute some variables and descriptive statistics.
+                        Create a pie chart.
+                        
+read_feenstra.R         Read the trade data from Feenstra et al. (2005).
+
+
+look_feenstra.R         
 
