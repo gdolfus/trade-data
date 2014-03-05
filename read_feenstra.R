@@ -52,7 +52,7 @@ for (i in years) {
 		i, ".dta", sep = ""))
 	tmp.dat <- tmp.dat[tmp.dat$exporter == "Finland" & tmp.dat$importer == 
 		"Fm USSR", ]
-
+	tmp.dat$importer='USSR'
 	# Remove columns that I don't need.
 	tmp.dat <- tmp.dat[, -match(c("icode", "ecode", "unit", "dot", 
 		"quantity"), names(tmp.dat))]
