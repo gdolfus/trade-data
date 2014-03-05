@@ -52,28 +52,29 @@ for (i in years) {
 		i, ".dta", sep = ""))
 	tmp.dat <- tmp.dat[tmp.dat$exporter == "Finland" & tmp.dat$importer == 
 		"Fm USSR", ]
-		
-				# Remove columns that I don't need.
-tmp.dat<-tmp.dat[,-match(c('icode','ecode','unit','dot','quantity'),names(tmp.dat))]
 
-		
+	# Remove columns that I don't need.
+	tmp.dat <- tmp.dat[, -match(c("icode", "ecode", "unit", "dot", 
+		"quantity"), names(tmp.dat))]
 
 
-		
+
+
+
 	if (length(tmp.dat$sitc4) - length(unique(tmp.dat$sitc4)) != 
 		0) {
 		print(paste("Same codes used more than once in", i, unique(tmp.dat$importer)))
-		
-		
+
+
 	}
-	
+
 	# Add total exports.
-		tmp.total <- tmp.dat[1, ]
-		tmp.total$sitc4 = "total"
-		tmp.total$value = sum(as.numeric(tmp.dat$value))
+	tmp.total <- tmp.dat[1, ]
+	tmp.total$sitc4 = "total"
+	tmp.total$value = sum(as.numeric(tmp.dat$value))
 
 	# Combine it with the data for earlier years.
-	tmp.old = rbind(tmp.old, tmp.dat,tmp.total)
+	tmp.old = rbind(tmp.old, tmp.dat, tmp.total)
 }
 
 
@@ -108,25 +109,28 @@ for (i in years) {
 		i, ".dta", sep = ""))
 	tmp.dat <- tmp.dat[tmp.dat$exporter == "Finland" & tmp.dat$importer == 
 		"World", ]
-		# Remove columns that I don't need.
-tmp.dat<-tmp.dat[,-match(c('icode','ecode','unit','dot','quantity'),names(tmp.dat))]
+	# Remove columns that I don't need.
+	tmp.dat <- tmp.dat[, -match(c("icode", "ecode", "unit", "dot", 
+		"quantity"), names(tmp.dat))]
 
 	if (length(tmp.dat$sitc4) - length(unique(tmp.dat$sitc4)) != 
 		0) {
 		# Aggregate the data to unique SITC codes.		
-		 tmp.df<-aggregate(tmp.dat$value,by=list(tmp.dat$sitc4),FUN=sum)
-		tmp.dat<-tmp.dat[match(tmp.df$Group.1,tmp.dat$sitc4),]
-		tmp.dat$value<-tmp.df$x
-		 
+		tmp.df <- aggregate(tmp.dat$value, by = list(tmp.dat$sitc4), 
+			FUN = sum)
+		tmp.dat <- tmp.dat[match(tmp.df$Group.1, tmp.dat$sitc4), 
+			]
+		tmp.dat$value <- tmp.df$x
+
 	}
 
 	# Add total exports.
-		tmp.total <- tmp.dat[1, ]
-		tmp.total$sitc4 = "total"
-		tmp.total$value = sum(as.numeric(tmp.dat$value))
+	tmp.total <- tmp.dat[1, ]
+	tmp.total$sitc4 = "total"
+	tmp.total$value = sum(as.numeric(tmp.dat$value))
 
 	# Combine it with the data for earlier years.
-	tmp.old = rbind(tmp.old, tmp.dat,tmp.total)
+	tmp.old = rbind(tmp.old, tmp.dat, tmp.total)
 }
 
 
@@ -171,7 +175,7 @@ rm(list = ls(pattern = "tmp"))
 
 # # Housekeeping.
 # write.table(tmp.old, paste(dirname.data, "fin-ex-wrld-su-panel.csv", 
-	# sep = ""), row.names = F, sep = ",")
+# sep = ""), row.names = F, sep = ",")
 
 
 
@@ -181,4 +185,3 @@ rm(list = ls(pattern = "tmp"))
 
 
 # rm(list = ls(pattern = "tmp"))
-
