@@ -52,15 +52,28 @@ for (i in years) {
 		i, ".dta", sep = ""))
 	tmp.dat <- tmp.dat[tmp.dat$exporter == "Finland" & tmp.dat$importer == 
 		"Fm USSR", ]
+		
+				# Remove columns that I don't need.
+tmp.dat<-tmp.dat[,-match(c('icode','ecode','unit','dot','quantity'),names(tmp.dat))]
+
+		
+
+
+		
 	if (length(tmp.dat$sitc4) - length(unique(tmp.dat$sitc4)) != 
 		0) {
 		print(paste("Same codes used more than once in", i, unique(tmp.dat$importer)))
 		
 		
 	}
+	
+	# Add total exports.
+		tmp.total <- tmp.dat[1, ]
+		tmp.total$sitc4 = "total"
+		tmp.total$value = sum(as.numeric(tmp.dat$value))
 
 	# Combine it with the data for earlier years.
-	tmp.old = rbind(tmp.old, tmp.dat)
+	tmp.old = rbind(tmp.old, tmp.dat,tmp.total)
 }
 
 
@@ -95,6 +108,7 @@ for (i in years) {
 		i, ".dta", sep = ""))
 	tmp.dat <- tmp.dat[tmp.dat$exporter == "Finland" & tmp.dat$importer == 
 		"World", ]
+		# Remove columns that I don't need.
 tmp.dat<-tmp.dat[,-match(c('icode','ecode','unit','dot','quantity'),names(tmp.dat))]
 
 	if (length(tmp.dat$sitc4) - length(unique(tmp.dat$sitc4)) != 
@@ -106,8 +120,13 @@ tmp.dat<-tmp.dat[,-match(c('icode','ecode','unit','dot','quantity'),names(tmp.da
 		 
 	}
 
+	# Add total exports.
+		tmp.total <- tmp.dat[1, ]
+		tmp.total$sitc4 = "total"
+		tmp.total$value = sum(as.numeric(tmp.dat$value))
+
 	# Combine it with the data for earlier years.
-	tmp.old = rbind(tmp.old, tmp.dat)
+	tmp.old = rbind(tmp.old, tmp.dat,tmp.total)
 }
 
 
