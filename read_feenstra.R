@@ -85,7 +85,7 @@ for (i in years) {
 
 
 # Housekeeping.
-write.table(tmp.old, paste(dirname.data, "fin-ex-su-panel.csv", 
+write.table(tmp.old, paste(dirname.data, "fin-ex-su-panel-tmp.csv", 
 	sep = ""), row.names = F, sep = ",")
 
 # "Fm USSR" is not in the data past 1991.
@@ -152,6 +152,41 @@ write.table(tmp.old, paste(dirname.data, "fin-ex-world-panel.csv",
 rm(list = ls(pattern = "tmp"))
 
 
+# - - - - - - - - - - - - - - - - - - - - - -  
+#
+#	 Share of exports to the USSR in total exports by goods.
+#
+# - - - - - - - - - - - - - - - - - - - - - - 
+
+
+wrld <- read.table(paste(dirname.data, "fin-ex-world-panel.csv", 
+	sep = ""), sep = ",", stringsAsFactors = F, header = T, colClasses = rep("character", 
+	1, 5))
+su <- read.table(paste(dirname.data, "fin-ex-su-panel-tmp.csv", sep = ""), 
+	sep = ",", stringsAsFactors = F, header = T, colClasses = rep("character", 
+		1, 5))
+
+
+tmp.old<-NULL
+for(i in paste(19,years,sep='')){
+	tmp.su<-su[su$year==i,]
+	tmp.wrld<-wrld[wrld$year==i,]
+	# Reduce data on exports to the world to the codes in USSR exports.
+	tmp.wrld<-tmp.wrld[match(tmp.su$sitc4,tmp.wrld$sitc4),]
+	# Compute the percentage of SU exports in total exports.
+	tmp.su$value<-as.numeric(tmp.su$value)
+	tmp.wrld$value<-as.numeric(tmp.wrld$value)
+	tmp.su$perc.of.wrld<-100*tmp.su$value/tmp.wrld$value
+	# Combine the data across years.
+	tmp.old<-rbind(tmp.old,tmp.su)
+}
+
+
+# Housekeeping.
+write.table(tmp.old, paste(dirname.data, "fin-ex-su-panel.csv", 
+	sep = ""), row.names = F, sep = ",")
+
+rm(list = ls(pattern = "tmp"))
 
 # - - - - - - - - - - - - - - - - - - - - - -  
 #
