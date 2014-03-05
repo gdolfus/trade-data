@@ -72,6 +72,8 @@ for (i in years) {
 	tmp.total <- tmp.dat[1, ]
 	tmp.total$sitc4 = "total"
 	tmp.total$value = sum(as.numeric(tmp.dat$value))
+	tmp.dat$perc <- 100 * as.numeric(tmp.dat$value)/tmp.total$value
+		tmp.total$perc = sum(tmp.dat$perc)
 
 	# Combine it with the data for earlier years.
 	tmp.old = rbind(tmp.old, tmp.dat, tmp.total)
@@ -128,9 +130,12 @@ for (i in years) {
 	tmp.total <- tmp.dat[1, ]
 	tmp.total$sitc4 = "total"
 	tmp.total$value = sum(as.numeric(tmp.dat$value))
+	tmp.dat$perc <- 100 * as.numeric(tmp.dat$value)/tmp.total$value
+		tmp.total$perc = sum(tmp.dat$perc)
 
 	# Combine it with the data for earlier years.
 	tmp.old = rbind(tmp.old, tmp.dat, tmp.total)
+	
 }
 
 
