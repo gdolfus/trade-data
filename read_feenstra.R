@@ -54,7 +54,9 @@ for (i in years) {
 		"Fm USSR", ]
 	if (length(tmp.dat$sitc4) - length(unique(tmp.dat$sitc4)) != 
 		0) {
-		print(paste("Same codes used more than one in", i, unique(tmp.dat$importer)))
+		print(paste("Same codes used more than once in", i, unique(tmp.dat$importer)))
+		
+		
 	}
 
 	# Combine it with the data for earlier years.
@@ -93,10 +95,15 @@ for (i in years) {
 		i, ".dta", sep = ""))
 	tmp.dat <- tmp.dat[tmp.dat$exporter == "Finland" & tmp.dat$importer == 
 		"World", ]
+tmp.dat<-tmp.dat[,-match(c('icode','ecode','unit','dot','quantity'),names(tmp.dat))]
 
 	if (length(tmp.dat$sitc4) - length(unique(tmp.dat$sitc4)) != 
 		0) {
-		print(paste("Same codes used more than one in", i, unique(tmp.dat$importer)))
+		# Aggregate the data to unique SITC codes.		
+		 tmp.df<-aggregate(tmp.dat$value,by=list(tmp.dat$sitc4),FUN=sum)
+		tmp.dat<-tmp.dat[match(tmp.df$Group.1,tmp.dat$sitc4),]
+		tmp.dat$value<-tmp.df$x
+		 
 	}
 
 	# Combine it with the data for earlier years.
@@ -109,3 +116,50 @@ write.table(tmp.old, paste(dirname.data, "fin-ex-world-panel.csv",
 	sep = ""), row.names = F, sep = ",")
 
 rm(list = ls(pattern = "tmp"))
+
+
+
+# - - - - - - - - - - - - - - - - - - - - - -  
+#
+# 		Finland - World, USSR
+#
+# - - - - - - - - - - - - - - - - - - - - - - 
+
+
+# Create a panel?
+# But the codes don't line up, so I'd have to fill in the missing matches. 
+#
+# wrld<-read.table(paste(dirname.data, "fin-ex-world-panel.csv", sep = ""),sep = ",",stringsAsFactors=F,header=T,colClasses = rep("character",1, 9))
+# su<-read.table(paste(dirname.data, "fin-ex-su-panel.csv", sep = ""),sep = ",",stringsAsFactors=F,header=T,colClasses = rep("character",1, 9))
+
+# # Remove variables that I don't need.
+# su$unit<-NULL
+# su$ecode<-NULL
+# su$icode<-NULL
+# su$quantity<-NULL
+# su$dot<-NULL
+# wrld$unit<-NULL
+# wrld$ecode<-NULL
+# wrld$icode<-NULL
+# wrld$quantity<-NULL
+# wrld$dot<-NULL
+
+# # Only look at the years for which I have data for the USSR.
+# years = 1975:1991
+# wrld<-wrld[which(wrld$year%in%years),]
+
+# tmp<-merge(x=wrld,y=su,by.x=c("year","sitc4"),by.y=c("year","sitc4"))
+
+# # Housekeeping.
+# write.table(tmp.old, paste(dirname.data, "fin-ex-wrld-su-panel.csv", 
+	# sep = ""), row.names = F, sep = ",")
+
+
+
+
+
+
+
+
+# rm(list = ls(pattern = "tmp"))
+
