@@ -52,7 +52,7 @@ for (i in years) {
 		i, ".dta", sep = ""))
 	tmp.dat <- tmp.dat[tmp.dat$exporter == "Finland" & tmp.dat$importer == 
 		"Fm USSR", ]
-	tmp.dat$importer='USSR'
+	tmp.dat$importer = "USSR"
 	# Remove columns that I don't need.
 	tmp.dat <- tmp.dat[, -match(c("icode", "ecode", "unit", "dot", 
 		"quantity"), names(tmp.dat))]
@@ -72,12 +72,16 @@ for (i in years) {
 	tmp.total <- tmp.dat[1, ]
 	tmp.total$sitc4 = "total"
 	tmp.total$value = sum(as.numeric(tmp.dat$value))
-	tmp.dat$perc <- 100 * as.numeric(tmp.dat$value)/tmp.total$value
-		tmp.total$perc = sum(tmp.dat$perc)
+
+	# Add share of good i in total exports to country X.
+	tmp.dat$perc.of.tot <- 100 * as.numeric(tmp.dat$value)/tmp.total$value
+	tmp.total$perc.of.tot = sum(tmp.dat$perc.of.tot)
 
 	# Combine it with the data for earlier years.
 	tmp.old = rbind(tmp.old, tmp.dat, tmp.total)
 }
+
+
 
 
 # Housekeeping.
@@ -130,12 +134,14 @@ for (i in years) {
 	tmp.total <- tmp.dat[1, ]
 	tmp.total$sitc4 = "total"
 	tmp.total$value = sum(as.numeric(tmp.dat$value))
-	tmp.dat$perc <- 100 * as.numeric(tmp.dat$value)/tmp.total$value
-		tmp.total$perc = sum(tmp.dat$perc)
+
+	# Add share of good i in total exports to country X.
+	tmp.dat$perc.of.tot <- 100 * as.numeric(tmp.dat$value)/tmp.total$value
+	tmp.total$perc.of.tot = sum(tmp.dat$perc.of.tot)
 
 	# Combine it with the data for earlier years.
 	tmp.old = rbind(tmp.old, tmp.dat, tmp.total)
-	
+
 }
 
 
