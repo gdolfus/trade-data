@@ -1,10 +1,11 @@
-feenstra
-
 look_feenstra
-what to do about double use of sitc codes in world data
+
+study the SU share of good x in total Finnish exports carefully
+
+geographical distribution of exports to SU (follow example in look_oecd.R)
 
 read_feenstra > loop over countries?
 
-inflation!
+deflate the data!
 
-plot time series for the aggregate data
+
