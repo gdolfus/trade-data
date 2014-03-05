@@ -58,11 +58,20 @@ wrld <- read.table(paste(dirname.data, "fin-ex-world-panel.csv",
 	1, 5))
 su <- read.table(paste(dirname.data, "fin-ex-su-panel.csv", sep = ""), 
 	sep = ",", stringsAsFactors = F, header = T, colClasses = rep("character", 
-		1, 5))
+		1, 6))
 
 # Only look at the years for which I have data for the USSR.
 years = 1975:1991
 wrld <- wrld[which(wrld$year %in% years), ]
+
+
+
+
+
+
+
+
+
 
 
 # - - - - - - - - - - - - - - - - - - - - - -  
@@ -175,13 +184,17 @@ tmpAGG$importer <- rep(tmpYY$importer, length(tmpAGG$value), 1)
 rm(list = ls(pattern = "tmp"))
 
 
+
 # - - - - - - - - - - - - - - - - - - - - - -  
 #
 #	 Plots.		
 #
 # - - - - - - - - - - - - - - - - - - - - - - 
 
+
+# ------------------------------------------------------------------------
 # Aggregate Finnish exports to the World and the USSR, first year==100.
+# ------------------------------------------------------------------------
 
 tmp.df <- rbind(su[su$sitc4 == "total", ], wrld[wrld$sitc4 == 
 	"total", ])
@@ -214,8 +227,9 @@ ggsave(paste(dirname.pics, "feenstra-fin-ex-su-wrld-agg-100.pdf",
 	sep = ""), plot = tmp.plot, width = 8, height = 4)
 
 
-
+# ------------------------------------------------------------------------
 # Aggregate Finnish exports to the World and the USSR.
+# ------------------------------------------------------------------------
 
 tmp.df <- rbind(su[su$sitc4 == "total", ], wrld[wrld$sitc4 == 
 	"total", ])
@@ -236,4 +250,30 @@ tmp.plot <- tmp.plot + ggtitle("Finnish Exports")
 
 ggsave(paste(dirname.pics, "feenstra-fin-ex-su-wrld-agg.pdf", 
 	sep = ""), plot = tmp.plot, width = 8, height = 4)
+
+
+
+
+# ------------------------------------------------------------------------
+# Share of exports to Soviet Union in total Finnish exports.
+# ------------------------------------------------------------------------
+tmp.df <- su[su$sitc4 == "total",]
+tmp.df$perc.of.wrld <- round(as.numeric(tmp.df$perc.of.wrld))
+
+tmp.plot <- ggplot(tmp.df, aes(x = year, y = perc.of.wrld))
+tmp.plot <- tmp.plot + geom_line(aes(col = importer, group = importer))
+tmp.plot <- tmp.plot + geom_point(aes(col = importer, group = importer))
+tmp.plot <- tmp.plot + sav.plot.setup
+
+x_breaks = seq(min(years), max(years), by = 5)
+x_labels = as.character(x_breaks)
+
+tmp.plot <- tmp.plot + scale_x_discrete(breaks = x_breaks, labels = x_labels)
+tmp.plot <- tmp.plot + ylab("percent")
+tmp.plot <- tmp.plot + theme(axis.title.x = element_blank())
+tmp.plot <- tmp.plot + ggtitle("Share in Total Finnish Exports")
+
+ggsave(paste(dirname.pics, "feenstra-fin-ex-su-shrofwrld-agg.pdf", 
+	sep = ""), plot = tmp.plot, width = 8, height = 4)
+
 
