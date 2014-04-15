@@ -29,10 +29,36 @@ rm(list = ls())
 # Packages.
 # Enable reading Stata data.
 library(foreign)
+library(gdata)
 
 # Directories.
 # Data.
-dirname.data <- "~/RRR_finn/data/feenstra/"
+dirname.data = "~/RRR_finn/data/feenstra/"
+dirname.data.cpi = "~/RRR_finn/data/fred/"
+
+
+
+# - - - - - - - - - - - - - - - - - - - - - -  
+#
+# 		Read data.
+#
+# - - - - - - - - - - - - - - - - - - - - - - 
+
+
+
+# The CPI comes from FRED.
+# http://research.stlouisfed.org/fred2/graph/?s[1][id]=CPIAUCSL
+
+cpi=read.xls(paste(dirname.data.cpi,"cpi_1947_2014_1975.xls",sep=''),"FRED Graph",header=T)
+cpi=cpi[-c(1:8),]
+cpi=data.frame(lapply(cpi,as.character),stringsAsFactors=F)
+names(cpi)=c('date','cpi.us')
+cpi$cpi.us=as.numeric(cpi$cpi.us)
+
+cpi$date=gsub("-01-01","",cpi$date)
+cpi$date=as.numeric(cpi$date)
+
+
 
 
 # - - - - - - - - - - - - - - - - - - - - - -  
@@ -41,7 +67,7 @@ dirname.data <- "~/RRR_finn/data/feenstra/"
 #
 # - - - - - - - - - - - - - - - - - - - - - - 
 
-years = 75:91
+years = 75:95
 
 tmp.old <- NULL
 
@@ -53,6 +79,7 @@ for (i in years) {
 	tmp.dat <- tmp.dat[tmp.dat$exporter == "Finland" & tmp.dat$importer == 
 		"Fm USSR", ]
 	tmp.dat$importer = "USSR"
+	
 	# Remove columns that I don't need.
 	tmp.dat <- tmp.dat[, -match(c("icode", "ecode", "unit", "dot", 
 		"quantity"), names(tmp.dat))]
@@ -67,6 +94,22 @@ for (i in years) {
 
 
 	}
+	
+	
+	
+	# ---------------------------------
+	# Deflate the data.
+	# ---------------------------------	
+	
+	# Store the nominal values with a different name.
+tmp.dat$nominal.value = tmp.dat$value
+
+tmp.dat$value = tmp.dat$value*cpi$cpi.us[which(cpi$date==tmp.dat$year[1])]/100
+	
+	
+	# ---------------------------------
+	# Additions based on deflated data.
+	# ---------------------------------	
 
 	# Add total exports.
 	tmp.total <- tmp.dat[1, ]
@@ -130,6 +173,24 @@ for (i in years) {
 
 	}
 
+
+	
+	# ---------------------------------
+	# Deflate the data.
+	# ---------------------------------	
+	
+	# Store the nominal values with a different name.
+tmp.dat$nominal.value = tmp.dat$value
+
+tmp.dat$value = tmp.dat$value*cpi$cpi.us[which(cpi$date==tmp.dat$year[1])]/100
+	
+	
+	# ---------------------------------
+	# Additions based on deflated data.
+	# ---------------------------------	
+
+
+
 	# Add total exports.
 	tmp.total <- tmp.dat[1, ]
 	tmp.total$sitc4 = "total"
@@ -161,10 +222,9 @@ rm(list = ls(pattern = "tmp"))
 
 wrld <- read.table(paste(dirname.data, "fin-ex-world-panel.csv", 
 	sep = ""), sep = ",", stringsAsFactors = F, header = T, colClasses = rep("character", 
-	1, 5))
+	1, 7))
 su <- read.table(paste(dirname.data, "fin-ex-su-panel-tmp.csv", sep = ""), 
-	sep = ",", stringsAsFactors = F, header = T, colClasses = rep("character", 
-		1, 5))
+	sep = ",", stringsAsFactors = F, header = T, colClasses = rep("character", 		1, 6))
 
 
 tmp.old<-NULL
@@ -185,49 +245,5 @@ for(i in paste(19,years,sep='')){
 # Housekeeping.
 write.table(tmp.old, paste(dirname.data, "fin-ex-su-panel.csv", 
 	sep = ""), row.names = F, sep = ",")
-
-rm(list = ls(pattern = "tmp"))
-
-# - - - - - - - - - - - - - - - - - - - - - -  
-#
-# 		Finland - World, USSR
-#
-# - - - - - - - - - - - - - - - - - - - - - - 
-
-
-# Create a panel?
-# But the codes don't line up, so I'd have to fill in the missing matches. 
-#
-# wrld<-read.table(paste(dirname.data, "fin-ex-world-panel.csv", sep = ""),sep = ",",stringsAsFactors=F,header=T,colClasses = rep("character",1, 9))
-# su<-read.table(paste(dirname.data, "fin-ex-su-panel.csv", sep = ""),sep = ",",stringsAsFactors=F,header=T,colClasses = rep("character",1, 9))
-
-# # Remove variables that I don't need.
-# su$unit<-NULL
-# su$ecode<-NULL
-# su$icode<-NULL
-# su$quantity<-NULL
-# su$dot<-NULL
-# wrld$unit<-NULL
-# wrld$ecode<-NULL
-# wrld$icode<-NULL
-# wrld$quantity<-NULL
-# wrld$dot<-NULL
-
-# # Only look at the years for which I have data for the USSR.
-# years = 1975:1991
-# wrld<-wrld[which(wrld$year%in%years),]
-
-# tmp<-merge(x=wrld,y=su,by.x=c("year","sitc4"),by.y=c("year","sitc4"))
-
-# # Housekeeping.
-# write.table(tmp.old, paste(dirname.data, "fin-ex-wrld-su-panel.csv", 
-# sep = ""), row.names = F, sep = ",")
-
-
-
-
-
-
-
 
 # rm(list = ls(pattern = "tmp"))
