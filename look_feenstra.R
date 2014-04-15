@@ -60,6 +60,10 @@ su <- read.table(paste(dirname.data, "fin-ex-su-panel.csv", sep = ""),
 	sep = ",", stringsAsFactors = F, header = T, colClasses = rep("character", 
 		1, 6))
 
+su[,which(names(su)%in%c("value","perc.of.tot","perc.of.wrld"))]=lapply(su[,which(names(su)%in%c("value","perc.of.tot","perc.of.wrld"))],as.numeric)
+wrld[,which(names(wrld)%in%c("value","perc.of.tot","perc.of.wrld"))]=lapply(wrld[,which(names(wrld)%in%c("value","perc.of.tot","perc.of.wrld"))],as.numeric)
+
+
 # Only look at the years for which I have data for the USSR.
 years = 1975:1991
 wrld <- wrld[which(wrld$year %in% years), ]
@@ -192,17 +196,17 @@ rm(list = ls(pattern = "tmp"))
 # - - - - - - - - - - - - - - - - - - - - - - 
 
 
-# ------------------------------------------------------------------------
-# Aggregate Finnish exports to the World and the USSR, first year==100.
-# ------------------------------------------------------------------------
+# -------------------------------------------------------------# Aggregate Finnish exports to the World and the USSR, base year==100.
 
-tmp.df <- rbind(su[su$sitc4 == "total", ], wrld[wrld$sitc4 == 
-	"total", ])
-tmp.df$value <- (as.numeric(tmp.df$value))
+
+tmp.df <- rbind(su[su$sitc4 == "total",which(names(su)%in%names(wrld)) ], wrld[wrld$sitc4 == 
+	"total",])
+
+base.year='1975'
 
 tmp.df$value[tmp.df$importer == "USSR"] <- 100 * tmp.df$value[tmp.df$importer == 
 	"USSR"]/tmp.df$value[tmp.df$importer == "USSR" & tmp.df$year == 
-	as.character(min(years))]
+	base.year]
 tmp.df$value[tmp.df$importer == "World"] <- 100 * tmp.df$value[tmp.df$importer == 
 	"World"]/tmp.df$value[tmp.df$importer == "World" & tmp.df$year == 
 	as.character(min(years))]
@@ -217,7 +221,7 @@ x_breaks = seq(min(years), max(years), by = 5)
 x_labels = as.character(x_breaks)
 
 tmp.plot <- tmp.plot + scale_x_discrete(breaks = x_breaks, labels = x_labels)
-tmp.plot <- tmp.plot + ylab(paste(min(years), " = 100", sep = " "))
+tmp.plot <- tmp.plot + ylab(paste(base.year, " = 100", sep = " "))
 tmp.plot <- tmp.plot + theme(axis.title.x = element_blank())
 tmp.plot <- tmp.plot + ggtitle("Finnish Exports")
 
@@ -227,9 +231,44 @@ ggsave(paste(dirname.pics, "feenstra-fin-ex-su-wrld-agg-100.pdf",
 	sep = ""), plot = tmp.plot, width = 8, height = 4)
 
 
-# ------------------------------------------------------------------------
-# Aggregate Finnish exports to the World and the USSR.
-# ------------------------------------------------------------------------
+# -----------------------------------------------------------
+# Aggregate Finnish exports to the USSR, base year==100.
+
+tmp.df <- rbind(su[su$sitc4 == "total",which(names(su)%in%names(wrld)) ])
+
+base.year='1990'
+
+tmp.df$value[tmp.df$importer == "USSR"] <- 100 * tmp.df$value[tmp.df$importer == 
+	"USSR"]/tmp.df$value[tmp.df$importer == "USSR" & tmp.df$year == 
+	base.year]
+
+tmp.df$value <- round(tmp.df$value)
+
+tmp.plot <- ggplot(tmp.df, aes(x = year, y = value))
+tmp.plot <- tmp.plot + geom_line(aes(col = importer, group = importer))
+tmp.plot <- tmp.plot + geom_point(aes(col = importer, group = importer))
+tmp.plot <- tmp.plot + sav.plot.setup
+
+x_breaks = seq(min(years), max(years), by = 5)
+x_labels = as.character(x_breaks)
+
+tmp.plot <- tmp.plot + scale_x_discrete(breaks = x_breaks, labels = x_labels)
+tmp.plot <- tmp.plot + ylab(paste(base.year, " = 100", sep = " "))
+tmp.plot <- tmp.plot + theme(axis.title.x = element_blank())
+tmp.plot <- tmp.plot + ggtitle("Finnish Exports to the USSR")
+
+tmp.plot
+
+ggsave(paste(dirname.pics, "feenstra-fin-ex-su-agg-100.pdf", 
+	sep = ""), plot = tmp.plot, width = 8, height = 4)
+
+
+
+
+
+# ------------------------------------------------------------
+# Aggregate Finnish exports to the world and the USSR, real values.
+
 
 tmp.df <- rbind(su[su$sitc4 == "total", ], wrld[wrld$sitc4 == 
 	"total", ])
@@ -254,9 +293,9 @@ ggsave(paste(dirname.pics, "feenstra-fin-ex-su-wrld-agg.pdf",
 
 
 
-# ------------------------------------------------------------------------
+# -----------------------------------------------------------
 # Share of exports to Soviet Union in total Finnish exports.
-# ------------------------------------------------------------------------
+
 tmp.df <- su[su$sitc4 == "total",]
 tmp.df$perc.of.wrld <- round(as.numeric(tmp.df$perc.of.wrld))
 
