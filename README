@@ -13,3 +13,6 @@ read_feenstra.R         Read the trade data from Feenstra et al. (2005).
 
 look_feenstra.R         
 
+
+read_expindex.R         Read the Finnish export price index (to deflate Finnish exports).
+
