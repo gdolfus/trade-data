@@ -10,8 +10,7 @@ look_trade.R            Compute some variables and descriptive statistics.
                         
 read_feenstra.R         Read the trade data from Feenstra et al. (2005).
 
-
-look_feenstra.R         
+look_feenstra.R         Plot aggregate series for Finnish exports to the USSR and the world. 
 
 
 read_expindex.R         Read the Finnish export price index (to deflate Finnish exports).
