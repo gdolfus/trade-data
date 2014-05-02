@@ -8,10 +8,25 @@ read_trade.R            Read trade statistics by commodities (Harmonized System)
 look_trade.R            Compute some variables and descriptive statistics.
                         Create a pie chart.
                         
-read_feenstra.R         Read the trade data from Feenstra et al. (2005).
+read_expindex.R         Read the Finnish export price index (to deflate Finnish exports).
+                        
+read_feenstra_raw.R     Read the trade data from Feenstra et al. (2005).
+                        Write them to csv files for Fin-USSR and Fin-Wrld trade.
+
+read_feenstra.R         Read the files created with read_feenstra_raw.R.
+                        Add the commodity descriptions.
+                        Deflate the data.
+                        Add shares 
+                            - of total exports to the USSR
+                            - of total Finnish exports.                    
+read_sitc_oecd_raw.R    Read the trade data from the OECD in SITC 2 classification.
+                        Write them to csv files for Fin-USSR and Fin-Wrld trade.
+
+read_sitc_oecd.R        Read the files created read_sitc_oecd_raw.R.
+                        Add the commodity descriptions.
+                        Deflate the data.
 
 look_feenstra.R         Plot aggregate series for Finnish exports to the USSR and the world. 
 
 
-read_expindex.R         Read the Finnish export price index (to deflate Finnish exports).
 
