@@ -2,8 +2,6 @@ look_feenstra
 
 add growth rates for export!
 
-use the export price index to deflate the data!
-
 study the SU share of good x in total Finnish exports carefully
 
 geographical distribution of exports to SU (follow example in look_oecd.R)
