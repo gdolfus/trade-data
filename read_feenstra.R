@@ -27,15 +27,14 @@
 rm(list = ls())
 
 # Packages.
-# Enable reading Stata data.
-library(foreign)
+# Enable reading Excel files.
 library(gdata)
+
 
 # Directories.
 # Data.
 dirname.data = "~/RRR_finn/data/feenstra/"
-dirname.data.cpi = "~/RRR_finn/data/fred/"
-
+dirname.data.exp = "~/RRR_finn/data/statfin/national/"
 
 
 # - - - - - - - - - - - - - - - - - - - - - -  
@@ -45,173 +44,204 @@ dirname.data.cpi = "~/RRR_finn/data/fred/"
 # - - - - - - - - - - - - - - - - - - - - - - 
 
 
+# Read export prices.
+exp = read.table(paste(dirname.data.exp, "fin-exportprices.csv", 
+	sep = ""), sep = ",", stringsAsFactors = F, header = T, 
+	colClasses = rep("character", 1, 9))
+# Convert the values to numeric.
+exp[, -which(names(exp) %in% "year")] = lapply(exp[, 
+	-which(names(exp) %in% "year")], as.numeric)
 
-# The CPI comes from FRED.
-# http://research.stlouisfed.org/fred2/graph/?s[1][id]=CPIAUCSL
+# Change the base year to 1975.
+tmp.new.base = "1975"
 
-cpi=read.xls(paste(dirname.data.cpi,"cpi_1947_2014_1975.xls",sep=''),"FRED Graph",header=T)
-cpi=cpi[-c(1:8),]
-cpi=data.frame(lapply(cpi,as.character),stringsAsFactors=F)
-names(cpi)=c('date','cpi.us')
-cpi$cpi.us=as.numeric(cpi$cpi.us)
+tmp.base = exp[which(exp$year == tmp.new.base), -which(names(exp) %in% 
+	"year")]
+tmp.base = as.numeric(tmp.base)
 
-cpi$date=gsub("-01-01","",cpi$date)
-cpi$date=as.numeric(cpi$date)
+tmp.new = t(100 * t(exp[, -which(names(exp) %in% "year")])/tmp.base)
 
-
-
-
-# - - - - - - - - - - - - - - - - - - - - - -  
-#
-# 		Finland - USSR
-#
-# - - - - - - - - - - - - - - - - - - - - - - 
-
-years = 75:95
-
-tmp.old <- NULL
-
-for (i in years) {
-
-	# Read the data.
-	tmp.dat <- read.dta(paste(dirname.data, "/wtf", i, "/wtf", 
-		i, ".dta", sep = ""))
-	tmp.dat <- tmp.dat[tmp.dat$exporter == "Finland" & tmp.dat$importer == 
-		"Fm USSR", ]
-	tmp.dat$importer = "USSR"
-	
-	# Remove columns that I don't need.
-	tmp.dat <- tmp.dat[, -match(c("icode", "ecode", "unit", "dot", 
-		"quantity"), names(tmp.dat))]
+exp[, -which(names(exp) %in% "year")] = tmp.new
 
 
+# Read the panels of the Feenstra data that were created with read_feenstra_raw.R.
+wrld <- read.table(paste(dirname.data, "fin-ex-world-panel-raw.csv", 
+	sep = ""), sep = ",", stringsAsFactors = F, header = T, 
+	colClasses = rep("character", 1, 5))
+su <- read.table(paste(dirname.data, "fin-ex-su-panel-raw.csv", 
+	sep = ""), sep = ",", stringsAsFactors = F, header = T, 
+	colClasses = rep("character", 1, 5))
 
+# Convert "value" to numeric.
+for (i in c("su", "wrld")) {
 
+	tmp.dat = get(i)
 
-	if (length(tmp.dat$sitc4) - length(unique(tmp.dat$sitc4)) != 
-		0) {
-		print(paste("Same codes used more than once in", i, unique(tmp.dat$importer)))
+	tmp.dat[, which(names(tmp.dat) %in% c("value"))] = as.numeric(tmp.dat[, 
+		which(names(tmp.dat) %in% c("value"))])
 
-
-	}
-	
-	
-	
-	# ---------------------------------
-	# Deflate the data.
-	# ---------------------------------	
-	
-	# Store the nominal values with a different name.
-tmp.dat$nominal.value = tmp.dat$value
-
-tmp.dat$value = tmp.dat$value*cpi$cpi.us[which(cpi$date==tmp.dat$year[1])]/100
-	
-	
-	# ---------------------------------
-	# Additions based on deflated data.
-	# ---------------------------------	
-
-	# Add total exports.
-	tmp.total <- tmp.dat[1, ]
-	tmp.total$sitc4 = "total"
-	tmp.total$value = sum(as.numeric(tmp.dat$value))
-
-	# Add share of good i in total exports to country X.
-	tmp.dat$perc.of.tot <- 100 * as.numeric(tmp.dat$value)/tmp.total$value
-	tmp.total$perc.of.tot = sum(tmp.dat$perc.of.tot)
-
-	# Combine it with the data for earlier years.
-	tmp.old = rbind(tmp.old, tmp.dat, tmp.total)
+	assign(i, tmp.dat)
 }
 
+# Read the descriptions.
+# This file comes directly from the UN.
+sitc.desc = read.xls(paste(dirname.data, "SITC2.xls", 
+	sep = ""), colClasses = c("character", "character"), 
+	stringsAsFactors = F)
+
+# Choose the codes and descriptions for 4-digit SITC 2 codes.
+sitc.desc = sitc.desc[which(nchar(sitc.desc$Commodity.Code) == 
+	4), ]
+
+rm(list = ls(pattern = "tmp"), i)
 
 
-
-# Housekeeping.
-write.table(tmp.old, paste(dirname.data, "fin-ex-su-panel-tmp.csv", 
-	sep = ""), row.names = F, sep = ",")
-
-# "Fm USSR" is not in the data past 1991.
-tmp.dat <- read.dta(paste(dirname.data, "/wtf", 92, "/wtf", 92, 
-	".dta", sep = ""))
-tmp.dat[tmp.dat$exporter == "Finland" & tmp.dat$importer == "Fm USSR", 
-	]
-# If I want to use that, I will have to aggregate it somehow.
-
-rm(list = ls(pattern = "tmp"))
 
 
 # - - - - - - - - - - - - - - - - - - - - - -  
 #
-# 		Finland - World
+#	 Add variables.
 #
 # - - - - - - - - - - - - - - - - - - - - - - 
 
-years = 75:95
 
-tmp.old <- NULL
+years = 1975:1991
 
-for (i in years) {
 
-	# Read the data.
-	tmp.dat <- read.dta(paste(dirname.data, "/wtf", i, "/wtf", 
-		i, ".dta", sep = ""))
-	tmp.dat <- tmp.dat[tmp.dat$exporter == "Finland" & tmp.dat$importer == 
-		"World", ]
-	# Remove columns that I don't need.
-	tmp.dat <- tmp.dat[, -match(c("icode", "ecode", "unit", "dot", 
-		"quantity"), names(tmp.dat))]
 
-	if (length(tmp.dat$sitc4) - length(unique(tmp.dat$sitc4)) != 
-		0) {
-		# Aggregate the data to unique SITC codes.		
-		tmp.df <- aggregate(tmp.dat$value, by = list(tmp.dat$sitc4), 
-			FUN = sum)
-		tmp.dat <- tmp.dat[match(tmp.df$Group.1, tmp.dat$sitc4), 
+for (i in c("su", "wrld")) {
+
+	tmp.df = get(i)
+
+	tmp.old <- NULL
+
+	for (j in years) {
+
+		# Subset the data.
+		tmp.dat = tmp.df[which(tmp.df$year == j), 
 			]
-		tmp.dat$value <- tmp.df$x
+
+		# -------------------------------------
+		# Add the descriptions of the SITC 2 codes to the trade data.
+
+		tmp.dat = merge(x = tmp.dat, y = sitc.desc, 
+			by.x = "sitc4", by.y = "Commodity.Code", 
+			all.x = T)
+
+
+
+		# ---------------------------------
+		# Deflate the data.
+
+
+		# Store the nominal values with a different name.
+		tmp.dat$nominal.value = tmp.dat$value
+
+		tmp.dat$real.value = NA
+
+		# Subset the export prices.
+		tmp.exp = exp[exp$year == j, ]
+
+		# Deflate food stuff.
+		
+		tmp.id = grep("^0", tmp.dat$sitc4)
+		tmp.dat$real.value[tmp.id] = tmp.dat$value[tmp.id] * 
+			tmp.exp[, grep(paste("sitc", "0", sep = "."), 
+				names(tmp.exp))]/100
+
+		tmp.id.done = tmp.id
+
+		# Deflate manufacturing (wood).
+		tmp.id = grep("^63", tmp.dat$sitc4)
+		tmp.dat$real.value[tmp.id] = tmp.dat$value[tmp.id] * 
+			tmp.exp[, grep(paste("sitc", "63", sep = "."), 
+				names(tmp.exp))]/100
+
+		tmp.id.done = c(tmp.id.done, tmp.id)
+
+
+		# Deflate manufacturing (paper).
+		tmp.id = grep("^64", tmp.dat$sitc4)
+		tmp.dat$real.value[tmp.id] = tmp.dat$value[tmp.id] * 
+			tmp.exp[, grep(paste("sitc", "64", sep = "."), 
+				names(tmp.exp))]/100
+
+		tmp.id.done = c(tmp.id.done, tmp.id)
+
+
+		# Deflate manufacturing (machinery).
+		tmp.id = grep("^7", tmp.dat$sitc4)
+		tmp.dat$real.value[tmp.id] = tmp.dat$value[tmp.id] * 
+			tmp.exp[, grep(paste("sitc", "7", sep = "."), 
+				names(tmp.exp))]/100
+
+		tmp.id.done = c(tmp.id.done, tmp.id)
+
+
+		# Deflate manufacturing (other than 63 or 64).
+		
+		tmp.id = grep("^6", tmp.dat$sitc4)
+		tmp.id = tmp.id[-which(tmp.id %in% which(substr(tmp.dat$sitc4, 
+			1, 2) %in% c("63", "64")))]
+
+		tmp.dat$real.value[tmp.id] = tmp.dat$value[tmp.id] * 
+			tmp.exp[, grep(paste("sitc", "6$", sep = "."), 
+				names(tmp.exp))]/100
+
+		tmp.id.done = c(tmp.id.done, tmp.id)
+
+
+		# Deflate all other goods.
+		
+		tmp.id = -tmp.id.done
+
+		tmp.dat$real.value[tmp.id] = tmp.dat$value[tmp.id] * 
+			tmp.exp[, grep("TOTAL", names(tmp.exp))]/100
+
+		# Deflate all goods by the same export price index.
+		
+
+		tmp.dat$value = tmp.dat$value * 
+			tmp.exp[, grep("TOTAL", names(tmp.exp))]/100
+
+
+
+
+		# ---------------------------------
+		# Additions based on deflated data.
+
+
+		# Add total exports.
+		tmp.total <- tmp.dat[1, ]
+		tmp.total$sitc4 = "total"
+		tmp.total$Commodity.description = "total"
+		tmp.total$value = sum(as.numeric(tmp.dat$value))
+
+		# Add share of good i in total exports to country X.
+		tmp.dat$perc.of.tot <- 100 * as.numeric(tmp.dat$value)/tmp.total$value
+		tmp.total$perc.of.tot = sum(tmp.dat$perc.of.tot)
+
+
+
+
+
+
+		# ---------------------------------
+		# Combine it with the data for earlier years.
+
+		tmp.old = rbind(tmp.old, tmp.dat, tmp.total)
+
+
+
 
 	}
 
-
-	
-	# ---------------------------------
-	# Deflate the data.
-	# ---------------------------------	
-	
-	# Store the nominal values with a different name.
-tmp.dat$nominal.value = tmp.dat$value
-
-tmp.dat$value = tmp.dat$value*cpi$cpi.us[which(cpi$date==tmp.dat$year[1])]/100
-	
-	
-	# ---------------------------------
-	# Additions based on deflated data.
-	# ---------------------------------	
-
-
-
-	# Add total exports.
-	tmp.total <- tmp.dat[1, ]
-	tmp.total$sitc4 = "total"
-	tmp.total$value = sum(as.numeric(tmp.dat$value))
-
-	# Add share of good i in total exports to country X.
-	tmp.dat$perc.of.tot <- 100 * as.numeric(tmp.dat$value)/tmp.total$value
-	tmp.total$perc.of.tot = sum(tmp.dat$perc.of.tot)
-
-	# Combine it with the data for earlier years.
-	tmp.old = rbind(tmp.old, tmp.dat, tmp.total)
-
+	assign(i, tmp.old)
 }
 
 
-# Housekeeping.
-write.table(tmp.old, paste(dirname.data, "fin-ex-world-panel.csv", 
-	sep = ""), row.names = F, sep = ",")
 
-rm(list = ls(pattern = "tmp"))
-
+rm(list = ls(pattern = "tmp"),i,j)
 
 # - - - - - - - - - - - - - - - - - - - - - -  
 #
@@ -220,30 +250,40 @@ rm(list = ls(pattern = "tmp"))
 # - - - - - - - - - - - - - - - - - - - - - - 
 
 
-wrld <- read.table(paste(dirname.data, "fin-ex-world-panel.csv", 
-	sep = ""), sep = ",", stringsAsFactors = F, header = T, colClasses = rep("character", 
-	1, 7))
-su <- read.table(paste(dirname.data, "fin-ex-su-panel-tmp.csv", sep = ""), 
-	sep = ",", stringsAsFactors = F, header = T, colClasses = rep("character", 		1, 6))
-
-
-tmp.old<-NULL
-for(i in paste(19,years,sep='')){
-	tmp.su<-su[su$year==i,]
-	tmp.wrld<-wrld[wrld$year==i,]
+tmp.old <- NULL
+for (i in years) {
+	tmp.su <- su[su$year == i, ]
+	tmp.wrld <- wrld[wrld$year == i, ]
 	# Reduce data on exports to the world to the codes in USSR exports.
-	tmp.wrld<-tmp.wrld[match(tmp.su$sitc4,tmp.wrld$sitc4),]
+	tmp.wrld <-tmp.wrld[match(tmp.su$sitc4, tmp.wrld$sitc4), 
+		]
 	# Compute the percentage of SU exports in total exports.
-	tmp.su$value<-as.numeric(tmp.su$value)
-	tmp.wrld$value<-as.numeric(tmp.wrld$value)
-	tmp.su$perc.of.wrld<-100*tmp.su$value/tmp.wrld$value
+	tmp.su$value <- as.numeric(tmp.su$value)
+	tmp.wrld$value <- as.numeric(tmp.wrld$value)
+	tmp.su$perc.of.wrld <- 100 * tmp.su$value/tmp.wrld$value
 	# Combine the data across years.
-	tmp.old<-rbind(tmp.old,tmp.su)
+	tmp.old <- rbind(tmp.old, tmp.su)
 }
+
+assign("su",tmp.old)
+
+
+
+rm(list = ls(pattern = "tmp"),i)
+
+
 
 
 # Housekeeping.
-write.table(tmp.old, paste(dirname.data, "fin-ex-su-panel.csv", 
+write.table(wrld, paste(dirname.data, "fin-ex-wrld-panel.csv", 
 	sep = ""), row.names = F, sep = ",")
 
-# rm(list = ls(pattern = "tmp"))
+write.table(su, paste(dirname.data, "fin-ex-su-panel.csv", 
+	sep = ""), row.names = F, sep = ",")
+
+
+
+
+
+
+
