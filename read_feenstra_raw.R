@@ -95,6 +95,9 @@ for (i in years) {
 		if (k == "Fm USSR") {
 			tmp.dat$importer = "USSR"
 		}
+		if (k == "Fm German FR") {
+			tmp.dat$importer = "Germany"
+		}
 
 		# Remove columns that I don't need.
 		tmp.dat <- tmp.dat[, -which(names(tmp.dat) %in% 
