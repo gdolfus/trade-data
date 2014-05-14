@@ -50,7 +50,6 @@ countries = c("su", "wrld", "uk", "ger", "us", "swe",
 	"nor", "fra", "den")
 
 
-rm(list = ls(pattern = "tmp"))
 
 # "USSR" is not in the data past 1991.
 years = 1975:1991
@@ -147,7 +146,8 @@ for (i in countries) {
 		tmp.dat = merge(x = tmp.dat, y = sitc.desc, by.x = "sitc4", 
 			by.y = "Commodity.Code", all.x = T)
 
-
+names(tmp.dat)[which(names(tmp.dat)%in%c("Commodity.description.x"))]="Commodity.description"
+tmp.dat[which(names(tmp.dat)%in%c("Commodity.description.y"))]=NULL
 
 		# ---------------------------------
 		# Deflate the data.
@@ -234,11 +234,11 @@ for (i in countries) {
 		tmp.total <- tmp.dat[1, ]
 		tmp.total$sitc4 = "total"
 		tmp.total$Commodity.description = "total"
-		tmp.total$value = sum(as.numeric(tmp.dat$value))
+		tmp.total$value = sum(as.numeric(tmp.dat$value),na.rm=T)
 
 		# Add share of good i in total exports to country X.
 		tmp.dat$perc.of.tot <- 100 * as.numeric(tmp.dat$value)/tmp.total$value
-		tmp.total$perc.of.tot = sum(tmp.dat$perc.of.tot)
+		tmp.total$perc.of.tot = sum(tmp.dat$perc.of.tot,na.rm=T)
 
 
 
