@@ -269,12 +269,12 @@ rm(list = ls(pattern = "tmp"), i, j)
 # - - - - - - - - - - - - - - - - - - - - - - 
 
 
-tmp.old <- NULL
 
 tmp.countries = countries[-which(countries == "wrld")]
 
 for (k in tmp.countries) {
 	tmp.dat = get(k)
+	tmp.old <- NULL
 
 	for (i in years) {
 		tmp.df <- tmp.dat[tmp.dat$year == i, ]
