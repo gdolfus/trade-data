@@ -2,11 +2,9 @@ look_feenstra
 
 add growth rates for export!
 
-study the SU share of good x in total Finnish exports carefully
 
 geographical distribution of exports to SU (follow example in look_oecd.R)
 
-read_feenstra > loop over countries?
 
 
 
