@@ -19,7 +19,9 @@ read_feenstra.R         Read the files created with read_feenstra_raw.R.
                             - value         = deflated with general index 
                             - real.value    = deflated with sector-specific index
                             - nominal.value = original values
-                            
+                        Nominal values
+                            - eur.value     = values in euros
+                            - fim.value     = values in markka
                         Add shares 
                             - of total exports to the USSR
                             - of total Finnish exports.
