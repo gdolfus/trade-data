@@ -35,7 +35,7 @@ library(gdata)
 # Data.
 dirname.data = "~/RRR_finn/data/feenstra/"
 dirname.data.exp = "~/RRR_finn/data/statfin/national/"
-
+dirname.data.xra = "~/RRR_finn/data/bof/fim_usd_exchange_rate/"
 
 
 # - - - - - - - - - - - - - - - - - - - - - -  
@@ -44,14 +44,14 @@ dirname.data.exp = "~/RRR_finn/data/statfin/national/"
 #
 # - - - - - - - - - - - - - - - - - - - - - - 
 
-
-
 countries = c("su", "wrld", "uk", "ger", "us", "swe", 
-	"nor", "fra", "den")
+	"nor", "fra", "den", "ita", "pol", "spa", "chi", 
+	"net")
 
 
 
 # "USSR" is not in the data past 1991.
+# 
 years = 1975:1991
 
 
@@ -60,6 +60,16 @@ years = 1975:1991
 # 		Read data.
 #
 # - - - - - - - - - - - - - - - - - - - - - - 
+
+# Read exchange rates.
+
+xra = read.table(paste(dirname.data.xra, "fim-usd-xrate-1948-2013.csv", 
+	sep = ""), sep = ",", stringsAsFactors = F, header = T, 
+	colClasses = rep("character", 1, 3))
+
+xra[, which(names(xra) %in% c("fim.usd", "eur.usd"))] = lapply(xra[, 
+	which(names(xra) %in% c("fim.usd", "eur.usd"))], 
+	as.numeric)
 
 
 # Read export prices.
@@ -146,8 +156,12 @@ for (i in countries) {
 		tmp.dat = merge(x = tmp.dat, y = sitc.desc, by.x = "sitc4", 
 			by.y = "Commodity.Code", all.x = T)
 
-names(tmp.dat)[which(names(tmp.dat)%in%c("Commodity.description.x"))]="Commodity.description"
-tmp.dat[which(names(tmp.dat)%in%c("Commodity.description.y"))]=NULL
+		names(tmp.dat)[which(names(tmp.dat) %in% c("Commodity.description.x"))] = "Commodity.description"
+		tmp.dat[which(names(tmp.dat) %in% c("Commodity.description.y"))] = NULL
+
+
+
+
 
 		# ---------------------------------
 		# Deflate the data.
@@ -226,24 +240,55 @@ tmp.dat[which(names(tmp.dat)%in%c("Commodity.description.y"))]=NULL
 
 
 
+
+
 		# ---------------------------------
-		# Additions based on deflated data.
+		# Additions based on NOMINAL data.
+		
+		
 
 
-		# Add total exports.
+		# Add the data in EUR.
+		tmp.dat$eur.value = tmp.dat$nominal.value * xra$eur.usd[which(xra$year == 
+			j)]
+
+		# Add the data in FIM.
+		tmp.dat$fim.value = tmp.dat$nominal.value * xra$fim.usd[which(xra$year == 
+			j)]
+
+
+			# Add share of good i in total exports to country X.
+		tmp.dat$perc.of.tot <- 100 * as.numeric(tmp.dat$nominal.value)/sum(as.numeric(tmp.dat$nominal.value), 
+			na.rm = T)
+
+		# ---------------------------------
+
+	# Add totals.
 		tmp.total <- tmp.dat[1, ]
 		tmp.total$sitc4 = "total"
 		tmp.total$Commodity.description = "total"
-		tmp.total$value = sum(as.numeric(tmp.dat$value),na.rm=T)
+	
+	 tmp.total$value =   sum(as.numeric(tmp.dat$value), 
+			na.rm = T)
 
-		# Add share of good i in total exports to country X.
-		tmp.dat$perc.of.tot <- 100 * as.numeric(tmp.dat$value)/tmp.total$value
-		tmp.total$perc.of.tot = sum(tmp.dat$perc.of.tot,na.rm=T)
+	tmp.total$nominal.value = sum(as.numeric(tmp.dat$nominal.value), 
+			na.rm = T)
+
+	tmp.total$real.value  = sum(as.numeric(tmp.dat$real.value), 
+			na.rm = T)
+
+	tmp.total$eur.value  = sum(as.numeric(tmp.dat$eur.value), 
+			na.rm = T)
+	
+	tmp.total$fim.value  = sum(as.numeric(tmp.dat$fim.value), 
+			na.rm = T)
 
 
+	tmp.total$fim.value  = sum(as.numeric(tmp.dat$fim.value), 
+			na.rm = T)
 
 
-
+	tmp.total$perc.of.tot = sum(as.numeric(tmp.dat$perc.of.tot))
 
 		# ---------------------------------
 		# Combine it with the data for earlier years.
@@ -277,11 +322,16 @@ for (k in tmp.countries) {
 	tmp.old <- NULL
 
 	for (i in years) {
-		tmp.df <- tmp.dat[tmp.dat$year == i, ]
-		tmp.wrld <- wrld[wrld$year == i, ]
+		tmp.df <- tmp.dat[which(tmp.dat$year == i), ]
+		tmp.wrld <- wrld[which(wrld$year == i), ]
+
+
 		# Reduce data on exports to the world to the codes in USSR exports.
-		tmp.wrld <- tmp.wrld[match(tmp.df$sitc4, tmp.wrld$sitc4), 
-			]
+		tmp.wrld <- tmp.wrld[which(tmp.wrld$sitc4 %in% 
+			tmp.df$sitc4), ]
+		tmp.wrld = tmp.wrld[order(tmp.wrld$sitc4), ]
+		tmp.df = tmp.df[order(tmp.df$sitc4), ]
+
 		# Compute the percentage of SU exports in total exports.
 		tmp.df$value <- as.numeric(tmp.df$value)
 		tmp.wrld$value <- as.numeric(tmp.wrld$value)
@@ -297,6 +347,9 @@ for (k in tmp.countries) {
 rm(list = ls(pattern = "tmp"), i)
 
 
+
+
+
 # - - - - - - - - - - - - - - - - - - - - - -  
 #
 #	 Housekeeping.
@@ -306,12 +359,11 @@ rm(list = ls(pattern = "tmp"), i)
 
 
 for (k in countries) {
-
+	print(k)
 	write.table(get(k), paste(dirname.data, "fin-ex-", 
 		k, "-panel.csv", sep = ""), row.names = F, sep = ",")
 
 }
-
 
 
 
