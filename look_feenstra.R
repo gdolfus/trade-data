@@ -31,10 +31,15 @@ sav.plot.setup <- theme(axis.text = element_text(color = "black",
 	panel.grid.minor = element_blank(), panel.background = element_blank(), 
 	panel.grid.major.x = element_blank(), panel.grid.major.y = element_line(size = 0.1, 
 		color = "gray", linetype = "dashed"), legend.justification = c(0, 
-		1), legend.position = c(0, 1), legend.key = element_blank(), 
-	legend.title = element_blank(), legend.text = element_text(color = "black", 
-		size = "14"), axis.line = element_line(color = "black", 
-		size = 0.75), axis.title = element_text(color = "black", 
+		1), legend.position = c(0, 1.05),  legend.key = element_blank(), 
+	# legend.title = element_blank(),
+	legend.title = element_text(color = "black", 
+		size = "14",face='plain'),
+	 legend.text = element_text(color = "black", 
+		size = "14"), 
+		axis.line = element_line(color = "black", 
+		size = 0.75), 
+		axis.title = element_text(color = "black", 
 		size = "14"))
 
 
@@ -42,6 +47,9 @@ sav.plot.setup <- theme(axis.text = element_text(color = "black",
 # Directories.
 # Data.
 dirname.data <- "~/RRR_finn/data/feenstra/"
+dirname.data.price <- "~/RRR_finn/data/statfin/national/"
+dirname.data.match = "~/RRR_finn/data/match/"
+
 # Pictures to be saved.
 dirname.pics <- "~/RRR_finn/pics/"
 
@@ -53,15 +61,19 @@ dirname.pics <- "~/RRR_finn/pics/"
 #
 # - - - - - - - - - - - - - - - - - - - - - - 
 
-wrld <- read.table(paste(dirname.data, "fin-ex-world-panel.csv", 
-	sep = ""), sep = ",", stringsAsFactors = F, header = T, colClasses = rep("character", 
-	1, 5))
-su <- read.table(paste(dirname.data, "fin-ex-su-panel.csv", sep = ""), 
-	sep = ",", stringsAsFactors = F, header = T, colClasses = rep("character", 
-		1, 6))
+wrld <- read.table(paste(dirname.data, "fin-ex-wrld-panel.csv", 
+	sep = ""), sep = ",", stringsAsFactors = F, header = T, 
+	colClasses = rep("character", 1, 5))
+su <- read.table(paste(dirname.data, "fin-ex-su-panel.csv", 
+	sep = ""), sep = ",", stringsAsFactors = F, header = T, 
+	colClasses = rep("character", 1, 6))
 
-su[,which(names(su)%in%c("value","perc.of.tot","perc.of.wrld"))]=lapply(su[,which(names(su)%in%c("value","perc.of.tot","perc.of.wrld"))],as.numeric)
-wrld[,which(names(wrld)%in%c("value","perc.of.tot","perc.of.wrld"))]=lapply(wrld[,which(names(wrld)%in%c("value","perc.of.tot","perc.of.wrld"))],as.numeric)
+su[, which(names(su) %in% c("value", "perc.of.tot", "perc.of.wrld"))] = lapply(su[, 
+	which(names(su) %in% c("value", "perc.of.tot", "perc.of.wrld"))], 
+	as.numeric)
+wrld[, which(names(wrld) %in% c("value", "perc.of.tot", 
+	"perc.of.wrld"))] = lapply(wrld[, which(names(wrld) %in% 
+	c("value", "perc.of.tot", "perc.of.wrld"))], as.numeric)
 
 
 # Only look at the years for which I have data for the USSR.
@@ -152,10 +164,12 @@ dim(tmpAA)
 
 # Note that there are double entries.
 
-tmpCLEAR <- tmpYY[-which(tmpYY$sitc4 %in% tmpX$sitc4), ]
+tmpCLEAR <- tmpYY[-which(tmpYY$sitc4 %in% tmpX$sitc4), 
+	]
 tmpCLEAR <- tmpCLEAR[-which(tmpCLEAR$sitc4 %in% tmpXX$sitc4), 
 	]
-tmpCLEAR <- tmpCLEAR[-which(tmpCLEAR$sitc4 %in% tmpA$sitc4), ]
+tmpCLEAR <- tmpCLEAR[-which(tmpCLEAR$sitc4 %in% tmpA$sitc4), 
+	]
 tmpCLEAR <- tmpCLEAR[-which(tmpCLEAR$sitc4 %in% tmpAA$sitc4), 
 	]
 tmpCLEAR <- tmpCLEAR[-which(tmpCLEAR$sitc4 %in% tmpAAA$sitc4), 
@@ -166,11 +180,15 @@ length(unique(tmpCLEAR$sitc4))
 
 # Should I just aggregate them?
 
-tmpAGG <- aggregate(x = tmpYY$value, by = list(tmpYY$sitc4), FUN = sum)
+tmpAGG <- aggregate(x = tmpYY$value, by = list(tmpYY$sitc4), 
+	FUN = sum)
 names(tmpAGG) <- c("sitc2", "value")
-tmpAGG$year <- rep(tmpYY$year, length(tmpAGG$value), 1)
-tmpAGG$exporter <- rep(tmpYY$exporter, length(tmpAGG$value), 1)
-tmpAGG$importer <- rep(tmpYY$importer, length(tmpAGG$value), 1)
+tmpAGG$year <- rep(tmpYY$year, length(tmpAGG$value), 
+	1)
+tmpAGG$exporter <- rep(tmpYY$exporter, length(tmpAGG$value), 
+	1)
+tmpAGG$importer <- rep(tmpYY$importer, length(tmpAGG$value), 
+	1)
 
 
 
@@ -199,61 +217,99 @@ rm(list = ls(pattern = "tmp"))
 # -------------------------------------------------------------# Aggregate Finnish exports to the World and the USSR, base year==100.
 
 
-tmp.df <- rbind(su[su$sitc4 == "total",which(names(su)%in%names(wrld)) ], wrld[wrld$sitc4 == 
-	"total",])
+tmp.df <- rbind(su[which(su$sitc4 == "total"), which(names(su) %in% 
+	names(wrld))], wrld[which(wrld$sitc4 == "total"), ])
 
-base.year='1975'
+base.year = "1990"
 
-tmp.df$value[tmp.df$importer == "USSR"] <- 100 * tmp.df$value[tmp.df$importer == 
-	"USSR"]/tmp.df$value[tmp.df$importer == "USSR" & tmp.df$year == 
-	base.year]
-tmp.df$value[tmp.df$importer == "World"] <- 100 * tmp.df$value[tmp.df$importer == 
-	"World"]/tmp.df$value[tmp.df$importer == "World" & tmp.df$year == 
-	as.character(min(years))]
+range.year = 1985:max(years)
+range.year = as.character(range.year)
+
+tmp.df = tmp.df[which(tmp.df$year %in% range.year), ]
+
+
+
+tmp.df$value[which(tmp.df$importer == "USSR")] <- 100 * tmp.df$value[which(tmp.df$importer == 
+	"USSR")]/tmp.df$value[which(tmp.df$importer == "USSR" & 
+	tmp.df$year == base.year)]
+tmp.df$value[which(tmp.df$importer == "World")] <- 100 * tmp.df$value[which(tmp.df$importer == 
+	"World")]/tmp.df$value[which(tmp.df$importer == "World" & 
+	tmp.df$year == base.year)]
 tmp.df$value <- round(tmp.df$value)
+# tmp.df$importer[which(tmp.df$importer=='USSR')]='exports to USSR'
+# tmp.df$importer[which(tmp.df$importer=='World')]='exports to World'
 
 tmp.plot <- ggplot(tmp.df, aes(x = year, y = value))
-tmp.plot <- tmp.plot + geom_line(aes(col = importer, group = importer))
-tmp.plot <- tmp.plot + geom_point(aes(col = importer, group = importer))
+tmp.plot <- tmp.plot + geom_line(aes(col = importer, 
+	group = importer, linetype = importer))
+tmp.plot <- tmp.plot + geom_point(aes(col = importer, 
+	group = importer, shape = importer))
 tmp.plot <- tmp.plot + sav.plot.setup
 
-x_breaks = seq(min(years), max(years), by = 5)
-x_labels = as.character(x_breaks)
+if (length(range.year) > 10) {
+	x_breaks = seq(min(years), max(years), by = 5)
+	x_labels = as.character(x_breaks)
+} else {
+	x_breaks = seq(min(years), max(years), by = 1)
+	x_labels = as.character(x_breaks)
+}
 
-tmp.plot <- tmp.plot + scale_x_discrete(breaks = x_breaks, labels = x_labels)
-tmp.plot <- tmp.plot + ylab(paste(base.year, " = 100", sep = " "))
+tmp.plot <- tmp.plot + scale_x_discrete(breaks = x_breaks, 
+	labels = x_labels)
+tmp.plot <- tmp.plot + ylab(paste(base.year, " = 100", 
+	sep = " "))
 tmp.plot <- tmp.plot + theme(axis.title.x = element_blank())
-tmp.plot <- tmp.plot + ggtitle("Finnish Exports")
+# tmp.plot <- tmp.plot + ggtitle("Finnish Exports")
 
 tmp.plot
 
 ggsave(paste(dirname.pics, "feenstra-fin-ex-su-wrld-agg-100.pdf", 
 	sep = ""), plot = tmp.plot, width = 8, height = 4)
 
+ggsave(paste(dirname.pics, "feenstra-fin-ex-su-wrld-agg-100-small.pdf", 
+	sep = ""), plot = tmp.plot, width = 5, height = 4)
+
 
 # -----------------------------------------------------------
 # Aggregate Finnish exports to the USSR, base year==100.
 
-tmp.df <- rbind(su[su$sitc4 == "total",which(names(su)%in%names(wrld)) ])
+tmp.df <- rbind(su[which(su$sitc4 == "total"), which(names(su) %in% 
+	names(wrld))])
 
-base.year='1990'
+base.year = "1990"
 
-tmp.df$value[tmp.df$importer == "USSR"] <- 100 * tmp.df$value[tmp.df$importer == 
-	"USSR"]/tmp.df$value[tmp.df$importer == "USSR" & tmp.df$year == 
-	base.year]
+range.year = 1985:max(years)
+range.year = as.character(range.year)
+
+tmp.df = tmp.df[which(tmp.df$year %in% range.year), ]
+
+
+tmp.df$value[which(tmp.df$importer == "USSR")] <- 100 * tmp.df$value[which(tmp.df$importer == 
+	"USSR")]/tmp.df$value[which(tmp.df$importer == "USSR" & 
+	tmp.df$year == base.year)]
 
 tmp.df$value <- round(tmp.df$value)
 
 tmp.plot <- ggplot(tmp.df, aes(x = year, y = value))
-tmp.plot <- tmp.plot + geom_line(aes(col = importer, group = importer))
-tmp.plot <- tmp.plot + geom_point(aes(col = importer, group = importer))
+tmp.plot <- tmp.plot + geom_line(aes(col = importer, 
+	group = importer, linetype = importer))
+tmp.plot <- tmp.plot + geom_point(aes(col = importer, 
+	group = importer, shape = importer))
 tmp.plot <- tmp.plot + sav.plot.setup
 
-x_breaks = seq(min(years), max(years), by = 5)
-x_labels = as.character(x_breaks)
 
-tmp.plot <- tmp.plot + scale_x_discrete(breaks = x_breaks, labels = x_labels)
-tmp.plot <- tmp.plot + ylab(paste(base.year, " = 100", sep = " "))
+if (length(range.year) > 10) {
+	x_breaks = seq(min(years), max(years), by = 5)
+	x_labels = as.character(x_breaks)
+} else {
+	x_breaks = seq(min(years), max(years), by = 1)
+	x_labels = as.character(x_breaks)
+}
+
+tmp.plot <- tmp.plot + scale_x_discrete(breaks = x_breaks, 
+	labels = x_labels)
+tmp.plot <- tmp.plot + ylab(paste(base.year, " = 100", 
+	sep = " "))
 tmp.plot <- tmp.plot + theme(axis.title.x = element_blank())
 tmp.plot <- tmp.plot + ggtitle("Finnish Exports to the USSR")
 
@@ -270,19 +326,35 @@ ggsave(paste(dirname.pics, "feenstra-fin-ex-su-agg-100.pdf",
 # Aggregate Finnish exports to the world and the USSR, real values.
 
 
-tmp.df <- rbind(su[su$sitc4 == "total", ], wrld[wrld$sitc4 == 
-	"total", ])
+tmp.df <- rbind(su[su$sitc4 == "total", which(names(su) %in% 
+	names(wrld))], wrld[wrld$sitc4 == "total", ])
+
+range.year = 1985:max(years)
+range.year = as.character(range.year)
+
+tmp.df = tmp.df[which(tmp.df$year %in% range.year), ]
+
+
 tmp.df$value <- round(as.numeric(tmp.df$value)/1e+06)
 
 tmp.plot <- ggplot(tmp.df, aes(x = year, y = value))
-tmp.plot <- tmp.plot + geom_line(aes(col = importer, group = importer))
-tmp.plot <- tmp.plot + geom_point(aes(col = importer, group = importer))
+tmp.plot <- tmp.plot + geom_line(aes(col = importer, 
+	group = importer, linetype = importer))
+tmp.plot <- tmp.plot + geom_point(aes(col = importer, 
+	group = importer, shape = importer))
 tmp.plot <- tmp.plot + sav.plot.setup
 
-x_breaks = seq(min(years), max(years), by = 5)
-x_labels = as.character(x_breaks)
 
-tmp.plot <- tmp.plot + scale_x_discrete(breaks = x_breaks, labels = x_labels)
+if (length(range.year) > 10) {
+	x_breaks = seq(min(years), max(years), by = 5)
+	x_labels = as.character(x_breaks)
+} else {
+	x_breaks = seq(min(years), max(years), by = 1)
+	x_labels = as.character(x_breaks)
+}
+
+tmp.plot <- tmp.plot + scale_x_discrete(breaks = x_breaks, 
+	labels = x_labels)
 tmp.plot <- tmp.plot + ylab("Million USD")
 tmp.plot <- tmp.plot + theme(axis.title.x = element_blank())
 tmp.plot <- tmp.plot + ggtitle("Finnish Exports")
@@ -296,18 +368,32 @@ ggsave(paste(dirname.pics, "feenstra-fin-ex-su-wrld-agg.pdf",
 # -----------------------------------------------------------
 # Share of exports to Soviet Union in total Finnish exports.
 
-tmp.df <- su[su$sitc4 == "total",]
+tmp.df <- su[su$sitc4 == "total", ]
+
+range.year = 1985:max(years)
+range.year = as.character(range.year)
+
+tmp.df = tmp.df[which(tmp.df$year %in% range.year), ]
+
 tmp.df$perc.of.wrld <- round(as.numeric(tmp.df$perc.of.wrld))
 
 tmp.plot <- ggplot(tmp.df, aes(x = year, y = perc.of.wrld))
-tmp.plot <- tmp.plot + geom_line(aes(col = importer, group = importer))
-tmp.plot <- tmp.plot + geom_point(aes(col = importer, group = importer))
+tmp.plot <- tmp.plot + geom_line(aes(col = importer, 
+	group = importer, linetype = importer))
+tmp.plot <- tmp.plot + geom_point(aes(col = importer, 
+	group = importer, shape = importer))
 tmp.plot <- tmp.plot + sav.plot.setup
 
-x_breaks = seq(min(years), max(years), by = 5)
-x_labels = as.character(x_breaks)
+if (length(range.year) > 10) {
+	x_breaks = seq(min(years), max(years), by = 5)
+	x_labels = as.character(x_breaks)
+} else {
+	x_breaks = seq(min(years), max(years), by = 1)
+	x_labels = as.character(x_breaks)
+}
 
-tmp.plot <- tmp.plot + scale_x_discrete(breaks = x_breaks, labels = x_labels)
+tmp.plot <- tmp.plot + scale_x_discrete(breaks = x_breaks, 
+	labels = x_labels)
 tmp.plot <- tmp.plot + ylab("percent")
 tmp.plot <- tmp.plot + theme(axis.title.x = element_blank())
 tmp.plot <- tmp.plot + ggtitle("Share in Total Finnish Exports")
@@ -316,3 +402,73 @@ ggsave(paste(dirname.pics, "feenstra-fin-ex-su-shrofwrld-agg.pdf",
 	sep = ""), plot = tmp.plot, width = 8, height = 4)
 
 
+
+
+# -----------------------------------------------------------
+# Share of exports to Soviet Union in total Finnish exports, base year==100.
+
+base.year = "1990"
+range.year = 1985:max(years)
+range.year = as.character(range.year)
+
+
+tmp.df <- su[su$sitc4 == "total", ]
+tmp.df = tmp.df[which(tmp.df$year %in% range.year), ]
+
+tmp.df$perc.of.wrld <- as.numeric(tmp.df$perc.of.wrld)
+
+tmp.df$perc.of.wrld[which(tmp.df$importer == "USSR")] <- 100 * 
+	tmp.df$perc.of.wrld[which(tmp.df$importer == "USSR")]/tmp.df$perc.of.wrld[which(tmp.df$importer == 
+	"USSR" & tmp.df$year == base.year)]
+
+
+
+tmp.plot <- ggplot(tmp.df, aes(x = year, y = perc.of.wrld))
+tmp.plot <- tmp.plot + geom_line(aes(col = importer, 
+	group = importer, linetype = importer))
+tmp.plot <- tmp.plot + geom_point(aes(col = importer, 
+	group = importer, shape = importer))
+tmp.plot <- tmp.plot + sav.plot.setup
+
+if (length(range.year) > 10) {
+	x_breaks = seq(min(years), max(years), by = 5)
+	x_labels = as.character(x_breaks)
+} else {
+	x_breaks = seq(min(years), max(years), by = 1)
+	x_labels = as.character(x_breaks)
+}
+
+tmp.plot <- tmp.plot + scale_x_discrete(breaks = x_breaks, 
+	labels = x_labels)
+tmp.plot <- tmp.plot + ylab(paste(base.year, " = 100", 
+	sep = " "))
+tmp.plot <- tmp.plot + theme(axis.title.x = element_blank())
+tmp.plot <- tmp.plot + ggtitle("Share in Total Finnish Exports")
+
+ggsave(paste(dirname.pics, "feenstra-fin-ex-su-shrofwrld-agg-100.pdf", 
+	sep = ""), plot = tmp.plot, width = 8, height = 4)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Housekeeping.
+
+tmp.dat = read.table(paste(dirname.data.price, "fin-exportprices.csv", 
+	sep = ""), header = F, sep = ",", stringsAsFactors = FALSE)
+
+write.csv(tmp.dat, paste(dirname.data, "fin-exportprices.csv", 
+	sep = ""), row.names = FALSE)
