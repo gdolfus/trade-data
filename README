@@ -22,7 +22,7 @@ read_feenstra.R         Read the files created with read_feenstra_raw.R.
                         Nominal values
                             - eur.value     = values in euros
                             - fim.value     = values in markka
-                        Add shares 
+                        Add shares (based on nominal.value)
                             - of total exports to the USSR
                             - of total Finnish exports.
                                                 
