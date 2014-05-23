@@ -11,7 +11,7 @@ look_trade.R            Compute some variables and descriptive statistics.
 read_expindex.R         Read the Finnish export price index (to deflate Finnish exports).
                         
 read_feenstra_raw.R     Read the trade data from Feenstra et al. (2005).
-                        Write them to csv files for Fin-USSR and Fin-Wrld trade.
+                        Write them to csv files for Fin-XXX and Fin-Wrld trade.
 
 read_feenstra.R         Read the files created with read_feenstra_raw.R.
                         Add the commodity descriptions.
@@ -23,7 +23,7 @@ read_feenstra.R         Read the files created with read_feenstra_raw.R.
                             - eur.value     = values in euros
                             - fim.value     = values in markka
                         Add shares (based on nominal.value)
-                            - of total exports to the USSR
+                            - of total exports to the XXX
                             - of total Finnish exports.
                                                 
 read_sitc_oecd_raw.R    Read the trade data from the OECD in SITC 2 classification.
