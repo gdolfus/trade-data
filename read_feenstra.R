@@ -52,7 +52,7 @@ countries = c("su", "wrld", "uk", "ger", "us", "swe",
 
 # "USSR" is not in the data past 1991.
 # 
-years = 1975:1991
+years = 1962:1991
 
 
 # - - - - - - - - - - - - - - - - - - - - - -  
