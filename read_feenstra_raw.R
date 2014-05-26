@@ -39,21 +39,20 @@ dirname.data = "~/RRR_finn/data/feenstra/"
 
 # - - - - - - - - - - - - - - - - - - - - - -  
 #
-# 		Read data.
+# 		Choose.
 #
 # - - - - - - - - - - - - - - - - - - - - - - 
 
-# countries = c("Fm USSR", "World")
-# label = countries
-# tmp.short = c("su", "wrld")
-
-countries = c("Fm USSR", "World", "UK", "Germany", "USA", 
-	"Sweden", "Norway", "France,Monac", "Denmark")
-
-
+countries = c("China")
 label = countries
-tmp.short = c("su", "wrld", "uk","ger", "us", "swe", 
-	"nor", "fra", "den")
+tmp.short = c("chi")
+
+# countries = c("Fm USSR", "World", "UK", "Germany", "USA", 
+# "Sweden", "Norway", "France,Monac", "Denmark",'Italy','Poland','Spain',"China","Netherlands")
+# label = countries
+# tmp.short = c("su", "wrld", "uk","ger", "us", "swe", 
+# "nor", "fra", "den",'ita','pol','spa','chi','net')
+
 label = data.frame(label, tmp.short)
 names(label)[1] = "orig"
 names(label)[2] = "short"
@@ -61,7 +60,15 @@ names(label)[2] = "short"
 rm(list = ls(pattern = "tmp"))
 
 # "Fm USSR" is not in the data past 1991.
-years = 75:91
+years = 62:91
+
+
+
+# - - - - - - - - - - - - - - - - - - - - - -  
+#
+# 		Read data.
+#
+# - - - - - - - - - - - - - - - - - - - - - - 
 
 # - - - - - - - - - - - - - - - - - - - - - -  
 #
@@ -84,9 +91,11 @@ for (i in years) {
 
 		tmp.label = as.character(label$short[which(label$orig == 
 			k)])
-			
-			
-		if(k=="Germany"&i<91){k="Fm German FR"}
+
+
+		if (k == "Germany" & i < 91) {
+			k = "Fm German FR"
+		}
 
 
 		tmp.dat <- tmp.df[which(tmp.df$exporter == "Finland" & 
@@ -97,6 +106,10 @@ for (i in years) {
 		}
 		if (k == "Fm German FR") {
 			tmp.dat$importer = "Germany"
+		}
+		
+		if (k == "France,Monac") {
+			tmp.dat$importer = "France"
 		}
 
 		# Remove columns that I don't need.
@@ -113,9 +126,18 @@ for (i in years) {
 			0) {
 			print(paste("Same codes used more than once in", 
 				i, unique(tmp.dat$importer)))
+			print("=> Aggregate to unique SITC codes")
 
+			tmp = aggregate(tmp.dat$value, by = list(tmp.dat$year, 
+				tmp.dat$importer, tmp.dat$exporter, tmp.dat$sitc4), 
+				sum, na.rm = T)
 
+			names(tmp)[1:4] = names(tmp.dat)[1:4]
+			names(tmp)[5] = names(tmp.dat)[5]
+			head(tmp)
+			tmp.dat = tmp
 		}
+
 
 		assign(paste(tmp.label, i, sep = ""), tmp.dat)
 	}
