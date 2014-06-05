@@ -44,15 +44,16 @@ dirname.data.xra = "~/RRR_finn/data/bof/fim_usd_exchange_rate/"
 #
 # - - - - - - - - - - - - - - - - - - - - - - 
 
-countries = c("su", "wrld", "uk", "ger", "us", "swe", 
-	"nor", "fra", "den", "ita", "pol", "spa", "chi", 
-	"net")
+# countries = c("su", "wrld", "uk", "ger", "us", "swe", 
+	# "nor", "fra", "den", "ita", "pol", "spa", "chi", 
+	# "net")
 
+countries = c("su", "wrld")
 
 
 # "USSR" is not in the data past 1991.
 # 
-years = 1962:1991
+years = 1965:1991
 
 
 # - - - - - - - - - - - - - - - - - - - - - -  
@@ -249,13 +250,13 @@ for (i in countries) {
 
 
 		# Add the data in EUR.
-		tmp.dat$eur.value = tmp.dat$nominal.value * xra$eur.usd[which(xra$year == 
-			j)]
+		tmp.dat$eur.value = tmp.dat$nominal.value * 1/(xra$eur.usd[which(xra$year == 
+			j)])
 
 		# Add the data in FIM.
-		tmp.dat$fim.value = tmp.dat$nominal.value * xra$fim.usd[which(xra$year == 
+		tmp.dat$fim.value = tmp.dat$nominal.value * 1/(xra$fim.usd[which(xra$year == 
 			j)]
-
+)
 
 			# Add share of good i in total exports to country X.
 		tmp.dat$perc.of.tot <- 100 * as.numeric(tmp.dat$nominal.value)/sum(as.numeric(tmp.dat$nominal.value), 
